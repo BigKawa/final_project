@@ -1,6 +1,4 @@
 import pandas as pd
-
-
 def first_clean(dataframe):
     """
     This function is used to clean the given dataframe by setting the index as fiscalDateEnding,
