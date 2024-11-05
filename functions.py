@@ -31,6 +31,35 @@ def first_clean(dataframe):
 
     return dataframe
 
+def second_clean(dataframe):
+    """
+    This function is used to clean the given dataframe by transposing it, setting the index as fiscalDateEnding,
+    and filling NaN values with 0. It is used to clean the income statement data of Microsoft.
+
+    Parameters
+    ----------
+    dataframe : pandas.DataFrame
+        The dataframe to be cleaned.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The cleaned dataframe.
+    """
+    # Transpose the dataframe and reset index
+    dataframe = dataframe.T.reset_index(drop=True)
+    # Set the first row as the header
+    dataframe.columns = dataframe.iloc[0]
+    # Drop the first row
+    dataframe = dataframe[1:]
+    # Shortening Dates
+    dataframe["fiscalDateEnding"] = dataframe["fiscalDateEnding"].map(lambda x: int(str(x)[:4]))
+    # Drop the reportedCurrency column
+    dataframe = dataframe.drop(columns="reportedCurrency")
+    # Convert all columns to numeric and handle NaN values
+    dataframe = dataframe.apply(pd.to_numeric, errors='coerce').fillna(0).astype(int)
+
+    return dataframe
 
 def calculating_kpi_pnl(pnl_dataframe):  
     """
@@ -83,6 +112,7 @@ def generate_automated_insights(kpi_data):
     """
     
 def generate_automated_insights(df):
+    
     """
     Analyzes key performance indicators (KPIs) from a df of data and generates a cohesive narrative interpretation.
 
@@ -125,4 +155,3 @@ def generate_automated_insights(df):
 
     # Join all insights into a single narrative text
     return " ".join(insights)
-
