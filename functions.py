@@ -1,36 +1,5 @@
 import pandas as pd
 
-def first_clean(dataframe):
-    """
-    This function is used to clean the given dataframe by setting the index as fiscalDateEnding,
-    and filling NaN values with 0. It is used to clean the balance sheet and cash flow data of
-    Microsoft.
-
-    Parameters
-    ----------
-    dataframe : pandas.DataFrame
-        The dataframe to be cleaned.
-
-    Returns
-    -------
-    pandas.DataFrame
-        The cleaned dataframe.
-    """
-    # Set the first kpi_data as the header
-    dataframe.columns = dataframe.iloc[0]  # Set the first kpi_data as column headers
-    dataframe = dataframe.drop(index=dataframe.index[0])  # Drop the kpi_data that was used as column names
-    dataframe = dataframe.iloc[1:]  # Drop the first kpi_data
-    dataframe.set_index("fiscalDateEnding", inplace=True)  # Set the index as fiscalDateEnding
-
-    # Convert all columns to numeric and handle NaN values
-    dataframe = dataframe.apply(pd.to_numeric, errors='coerce').fillna(0).astype(int)
-
-    # Transpose the dataframe
-    dataframe = dataframe.T  # Transpose to make the fiscal dates columns and metrics as kpi_datas
-    dataframe.index = dataframe.index.map(lambda x: int(str(x)[:4]))
-
-    return dataframe
-
 def second_clean(dataframe):
     """
     This function is used to clean the given dataframe by transposing it, setting the index as fiscalDateEnding,
@@ -48,9 +17,9 @@ def second_clean(dataframe):
     """
     # Transpose the dataframe and reset index
     dataframe = dataframe.T.reset_index(drop=True)
-    # Set the first row as the header
+    # Set the first pnl_concated as the header
     dataframe.columns = dataframe.iloc[0]
-    # Drop the first row
+    # Drop the first pnl_concated
     dataframe = dataframe[1:]
     # Shortening Dates
     dataframe["fiscalDateEnding"] = dataframe["fiscalDateEnding"].map(lambda x: int(str(x)[:4]))
@@ -155,6 +124,67 @@ def generate_automated_insights(df):
 
     # Join all insights into a single narrative text
     return " ".join(insights)
+
+
+def generate_insights_pnl(pnl_concated):
+
+    """
+    Generates enhanced financial insights for each year in the income statement dataframe by comparing current year and previous year's data.
+
+    Parameters
+    ----------
+    pnl_concated : pandas.Series
+        A pnl_concated from the dataframe containing income statement data with both current year and previous year's columns.
+
+    Returns
+    -------
+    str
+        A single cohesive text containing narrative insights for the given pnl_concated.
+    """
+    insights = []
+
+    # Gross Margin Insight
+    if pnl_concated['grossMargin_prev_year'] != 0:
+        gross_margin_change = ((pnl_concated['grossMargin'] - pnl_concated['grossMargin_prev_year']) / pnl_concated['grossMargin_prev_year']) * 100
+        insights.append(f"In {pnl_concated['fiscalDateEnding']}, the Gross Margin was {pnl_concated['grossMargin']}%, which changed by {gross_margin_change:.2f}% compared to the previous year.")
+
+    # Operating Margin Insight
+    if pnl_concated['operatingMargin_prev_year'] != 0:
+        operating_margin_change = ((pnl_concated['operatingMargin'] - pnl_concated['operatingMargin_prev_year']) / pnl_concated['operatingMargin_prev_year']) * 100
+        insights.append(f"The Operating Margin was {pnl_concated['operatingMargin']}%, which changed by {operating_margin_change:.2f}% compared to the previous year.")
+
+    # Net Profit Margin Insight
+    if pnl_concated['netProfitMargin_prev_year'] != 0:
+        net_profit_margin_change = ((pnl_concated['netProfitMargin'] - pnl_concated['netProfitMargin_prev_year']) / pnl_concated['netProfitMargin_prev_year']) * 100
+        insights.append(f"The Net Profit Margin was {pnl_concated['netProfitMargin']}%, which changed by {net_profit_margin_change:.2f}% compared to the previous year.")
+
+    # Interest Coverage Ratio Insight
+    if pnl_concated['interestCoverageRatio_prev_year'] != 0:
+        interest_coverage_change = ((pnl_concated['interestCoverageRatio'] - pnl_concated['interestCoverageRatio_prev_year']) / pnl_concated['interestCoverageRatio_prev_year']) * 100
+        insights.append(f"The Interest Coverage Ratio was {pnl_concated['interestCoverageRatio']}, which changed by {interest_coverage_change:.2f}% compared to the previous year.")
+
+    # Revenue Gpnl_concatedth Insight
+    if pnl_concated['totalRevenue_prev_year'] != 0:
+        revenue_gpnl_concatedth = ((pnl_concated['totalRevenue'] - pnl_concated['totalRevenue_prev_year']) / pnl_concated['totalRevenue_prev_year']) * 100
+        insights.append(f"Total Revenue was {pnl_concated['totalRevenue']}, which changed by {revenue_gpnl_concatedth:.2f}% compared to the previous year.")
+
+    # Net Income Trends
+    if pnl_concated['netIncome_prev_year'] != 0:
+        net_income_change = ((pnl_concated['netIncome'] - pnl_concated['netIncome_prev_year']) / pnl_concated['netIncome_prev_year']) * 100
+        insights.append(f"Net Income was {pnl_concated['netIncome']}, which changed by {net_income_change:.2f}% compared to the previous year.")
+
+    # Operating Expenses Insight
+    if pnl_concated['operatingExpenses_prev_year'] != 0:
+        operating_expenses_change = ((pnl_concated['operatingExpenses'] - pnl_concated['operatingExpenses_prev_year']) / pnl_concated['operatingExpenses_prev_year']) * 100
+        insights.append(f"Operating Expenses were {pnl_concated['operatingExpenses']}, which changed by {operating_expenses_change:.2f}% compared to the previous year.")
+
+    # EBITDA Insight
+    if pnl_concated['ebitda_prev_year'] != 0:
+        ebitda_change = ((pnl_concated['ebitda'] - pnl_concated['ebitda_prev_year']) / pnl_concated['ebitda_prev_year']) * 100
+        insights.append(f"EBITDA was {pnl_concated['ebitda']}, which changed by {ebitda_change:.2f}% compared to the previous year.")
+
+    return " ".join(insights)
+
 
 
 def create_prev_year(df_current_year):    
