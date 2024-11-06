@@ -155,3 +155,27 @@ def generate_automated_insights(df):
 
     # Join all insights into a single narrative text
     return " ".join(insights)
+
+
+def create_prev_year(df_current_year):    
+    """
+    Creates a new dataframe df_prev with data from the previous year.
+
+    Parameters
+    ----------
+    df_current_year : pandas.DataFrame
+        A dataframe containing the current year's data for the company.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The newly created dataframe with data from the previous year.
+    """
+    
+    # Create a new pnl dataframe with previous year data
+    df_prev = df_current_year.set_index("fiscalDateEnding").shift(-1)
+    df_prev.fillna(0,inplace=True)
+    df_prev = df_prev.select_dtypes(exclude=['object']).astype(int).reset_index(drop=True)
+    df_prev.columns = [F"{col}_prev" for col in df_prev.columns]
+    
+    return df_prev
