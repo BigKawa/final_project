@@ -209,3 +209,72 @@ def create_prev_year(df_current_year):
     df_prev.columns = [F"{col}_prev" for col in df_prev.columns]
     
     return df_prev
+
+def generate_pattern_insights(pattern_df_pnl):
+    """
+    Detects financial patterns in multiple metrics over multiple years and generates insights as a single string.
+
+    Parameters
+    ----------
+    pattern_df_pnl : pandas.Series
+        A row from the dataframe containing financial data over multiple years.
+
+    Returns
+    -------
+    str
+        A string providing insights about detected patterns in revenue, margins, and other financial metrics.
+    """
+    insights = []
+
+    # Helper function to calculate growth
+    def calculate_growth(current, previous):
+        if pd.notna(previous) and previous != 0:
+            return (current - previous) / previous * 100
+        return None
+
+    # Pattern 1: Growth or Decline in Revenue
+    if 'totalRevenue' in pattern_df_pnl.index:
+        revenue_current = pattern_df_pnl['totalRevenue']
+        revenue_prev = pattern_df_pnl.get('totalRevenue_prev', None)
+        growth = calculate_growth(revenue_current, revenue_prev)
+        if growth is not None:
+            if growth > 0:
+                insights.append("Total Revenue has grown compared to the previous year, indicating strong market demand.")
+            elif growth < 0:
+                insights.append("Total Revenue has declined compared to the previous year, indicating potential market challenges.")
+
+    # Pattern 2: Change in Gross Margin
+    if 'grossMargin' in pattern_df_pnl.index:
+        gross_margin_current = pattern_df_pnl['grossMargin']
+        gross_margin_prev = pattern_df_pnl.get('grossMargin_prev', None)
+        change = calculate_growth(gross_margin_current, gross_margin_prev)
+        if change is not None:
+            if change > 0:
+                insights.append("Gross Margin has improved compared to the previous year, suggesting better cost management.")
+            elif change < 0:
+                insights.append("Gross Margin has decreased compared to the previous year, indicating rising production costs or pricing pressures.")
+
+    # Pattern 3: Change in Operating Margin
+    if 'operatingMargin' in pattern_df_pnl.index:
+        operating_margin_current = pattern_df_pnl['operatingMargin']
+        operating_margin_prev = pattern_df_pnl.get('operatingMargin_prev', None)
+        change = calculate_growth(operating_margin_current, operating_margin_prev)
+        if change is not None:
+            if change > 0:
+                insights.append("Operating Margin has increased compared to the previous year, reflecting enhanced operational efficiency.")
+            elif change < 0:
+                insights.append("Operating Margin has decreased compared to the previous year, indicating potential inefficiencies in operational costs.")
+
+    # Pattern 4: Change in Net Income
+    if 'netIncome' in pattern_df_pnl.index:
+        net_income_current = pattern_df_pnl['netIncome']
+        net_income_prev = pattern_df_pnl.get('netIncome_prev', None)
+        change = calculate_growth(net_income_current, net_income_prev)
+        if change is not None:
+            if change > 0:
+                insights.append("Net Income has grown compared to the previous year, indicating improved profitability.")
+            elif change < 0:
+                insights.append("Net Income has declined compared to the previous year, which may signal profitability challenges.")
+
+    # Combine all insights into a single narrative string
+    return " ".join(insights)
