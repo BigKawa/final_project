@@ -27,7 +27,7 @@ def second_clean(dataframe):
     dataframe = dataframe.drop(columns="reportedCurrency")
     # Convert all columns to numeric and handle NaN values
     dataframe = dataframe.apply(pd.to_numeric, errors='coerce').fillna(0).astype(int)
-
+    dataframe.reset_index(drop=True, inplace=True)
     return dataframe
 
 def calculating_kpi_pnl(pnl_dataframe):  
@@ -260,70 +260,41 @@ def yeah_comparison_pnl(pattern_df_pnl):
     # Combine all insights into a single narrative string
     return " ".join(insights)
 
+def generate_insights_pnl_multi_year(dataframe):
+    insights_list = []
+    for index, row in dataframe.iterrows():
+        if index + 2 < len(dataframe):
+            current_year = row['fiscalDateEnding']
 
-def generate_insights_pnl_multi_year(df):
-    """
-    Generates enhanced financial insights for each row in the income statement dataframe by comparing multiple years of data.
+            kpis = ['grossProfit', 'totalRevenue', 'costOfRevenue',
+       'costofGoodsAndServicesSold', 'operatingIncome',
+       'sellingGeneralAndAdministrative', 'researchAndDevelopment',
+       'operatingExpenses', 'investmentIncomeNet', 'netInterestIncome',
+       'interestIncome', 'interestExpense', 'nonInterestIncome',
+       'otherNonOperatingIncome', 'depreciation',
+       'depreciationAndAmortization', 'incomeBeforeTax', 'incomeTaxExpense',
+       'interestAndDebtExpense', 'netIncomeFromContinuingOperations',
+       'comprehensiveIncomeNetOfTax', 'ebit', 'ebitda', 'netIncome',
+       'grossMargin', 'operatingMargin', 'netProfitMargin',
+       'interestCoverageRatio']
+            insights = []
 
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        A dataframe containing income statement data with multiple years' columns.
+            for kpi in kpis:
+                current_value = row[kpi]
+                next_value = dataframe.iloc[index + 1][kpi]
+                next_next_value = dataframe.iloc[index + 2][kpi]
 
-    Returns
-    -------
-    pandas.Series
-        A series containing narrative insights for each row in the dataframe.
-    """
-    # Debug: Print all column names to verify their correctness
-    print("Available columns in DataFrame:", df.columns.tolist())
-
-    def calculate_growth(current, previous):
-        if pd.notna(previous) and previous != 0:
-            return (current - previous) / previous * 100
-        return None
-
-    def generate_insights_for_row(row_index):
-        insights = []
-
-        # Debug: Print row being processed
-        print(f"Processing row {row_index}")
-
-        # List of KPIs to check for patterns based on provided CSV structure
-        kpis = [
-            'grossMargin', 'operatingMargin', 'netProfitMargin', 'interestCoverageRatio',
-            'totalRevenue', 'netIncome', 'operatingExpenses', 'ebitda'
-        ]
-
-        # Iterate over each KPI to analyze trends over the next two years
-        for kpi in kpis:
-            values = []
-
-            # Get current year and the next two years for comparison
-            current_value = df.at[row_index, kpi] if kpi in df.columns else None
-            next_year_value = df.at[row_index + 1, kpi] if (row_index + 1 in df.index and kpi in df.columns) else None
-            two_years_later_value = df.at[row_index + 2, kpi] if (row_index + 2 in df.index and kpi in df.columns) else None
-
-            values = [v for v in [current_value, next_year_value, two_years_later_value] if pd.notna(v)]
-
-            # Debug: Print values being analyzed for each KPI
-            print(f"Analyzing {kpi} for row {row_index}: values={values}")
-
-            if len(values) >= 2:  # Require at least two years of data
-                growth_trends = []
-                for i in range(1, len(values)):
-                    growth = calculate_growth(values[i], values[i - 1])
-                    growth_trends.append(growth)
-
-                # Check growth trends for consistent increase or decrease
-                if all(g is not None and g > 0 for g in growth_trends):
-                    insights.append(f"The {kpi} has grown consistently over the next {len(growth_trends)} years, indicating strong performance.")
-                elif all(g is not None and g < 0 for g in growth_trends):
-                    insights.append(f"The {kpi} has declined consistently over the next {len(growth_trends)} years, which may indicate challenges in performance.")
+                # Analyze trends for each KPI across three years
+                if current_value > next_value and next_value > next_next_value:
+                    insights.append(f'The {kpi} has grown consistently over the past three years ending in {current_year}.')
+                elif current_value < next_value and next_value < next_next_value:
+                    insights.append(f'The {kpi} has declined consistently over the past three years ending in {current_year}.')
+                elif current_value == next_value and next_value == next_next_value:
+                    insights.append(f'The {kpi} has remained stable over the past three years ending in {current_year}.')
                 else:
-                    insights.append(f"The {kpi} has shown fluctuations over the next {len(growth_trends)} years, with mixed performance trends.")
+                    insights.append(f'The {kpi} has shown fluctuations over the past three years ending in {current_year}.')
 
-        return " ".join(insights)
-
-    # Apply the insights generation to each row in the dataframe, using the row index to reference future rows
-    return df.apply(lambda row: generate_insights_for_row(row.name), axis=1)
+            insights_list.append(' '.join(insights))
+        else:
+            insights_list.append('Insufficient data for trend analysis over three years.')
+    return insights_list
