@@ -191,7 +191,7 @@ def create_prev_year(df_current_year):
     
     return df_prev
 
-def generate_pattern_insights(pattern_df_pnl):
+def yeah_comparison_pnl(pattern_df_pnl):
     """
     Detects financial patterns in multiple metrics over multiple years and generates insights as a single string.
 
