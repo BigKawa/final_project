@@ -61,27 +61,8 @@ def calculating_kpi_pnl(pnl_dataframe):
     
     return pnl_dataframe
     
-
-def generate_automated_insights(kpi_data):
-    """
-    Generates a narrative of automated insights based on key performance indicators (KPIs) data.
-
-    Parameters
-    ----------
-    kpi_data : pandas.DataFrame
-        A dataframe containing KPI data with columns such as 'fiscalDateEnding', 'grossMargin',
-        'operatingMargin', 'netProfitMargin', and 'interestCoverageRatio'.
-
-    Returns
-    -------
-    str
-        A narrative string that provides insights into the company's financial performance, focusing on
-        gross margin, operating margin, net profit margin, and interest coverage ratio. The insights
-        assess aspects like cost control, operational efficiency, profitability, and financial stability.
-    """
     
 def generate_automated_insights(df):
-    
     """
     Analyzes key performance indicators (KPIs) from a df of data and generates a cohesive narrative interpretation.
 
@@ -127,14 +108,13 @@ def generate_automated_insights(df):
 
 
 def generate_insights_pnl(pnl_concated):
-
     """
-    Generates enhanced financial insights for each year in the income statement dataframe by comparing current year and previous year's data.
+    Generates enhanced financial insights for each in the income statement dataframe by comparing current and previous's data.
 
     Parameters
     ----------
     pnl_concated : pandas.Series
-        A pnl_concated from the dataframe containing income statement data with both current year and previous year's columns.
+        A pnl_concated from the dataframe containing income statement data with both current and previous's columns.
 
     Returns
     -------
@@ -144,44 +124,44 @@ def generate_insights_pnl(pnl_concated):
     insights = []
 
     # Gross Margin Insight
-    if pnl_concated['grossMargin_prev_year'] != 0:
-        gross_margin_change = ((pnl_concated['grossMargin'] - pnl_concated['grossMargin_prev_year']) / pnl_concated['grossMargin_prev_year']) * 100
-        insights.append(f"In {pnl_concated['fiscalDateEnding']}, the Gross Margin was {pnl_concated['grossMargin']}%, which changed by {gross_margin_change:.2f}% compared to the previous year.")
+    if pnl_concated['grossMargin_prev'] != 0:
+        gross_margin_change = ((pnl_concated['grossMargin'] - pnl_concated['grossMargin_prev']) / pnl_concated['grossMargin_prev']) * 100
+        insights.append(f"In {pnl_concated['fiscalDateEnding']}, the Gross Margin was {pnl_concated['grossMargin']}%, which changed by {gross_margin_change:.2f}% compared to the previous.")
 
     # Operating Margin Insight
-    if pnl_concated['operatingMargin_prev_year'] != 0:
-        operating_margin_change = ((pnl_concated['operatingMargin'] - pnl_concated['operatingMargin_prev_year']) / pnl_concated['operatingMargin_prev_year']) * 100
-        insights.append(f"The Operating Margin was {pnl_concated['operatingMargin']}%, which changed by {operating_margin_change:.2f}% compared to the previous year.")
+    if pnl_concated['operatingMargin_prev'] != 0:
+        operating_margin_change = ((pnl_concated['operatingMargin'] - pnl_concated['operatingMargin_prev']) / pnl_concated['operatingMargin_prev']) * 100
+        insights.append(f"The Operating Margin was {pnl_concated['operatingMargin']}%, which changed by {operating_margin_change:.2f}% compared to the previous.")
 
     # Net Profit Margin Insight
-    if pnl_concated['netProfitMargin_prev_year'] != 0:
-        net_profit_margin_change = ((pnl_concated['netProfitMargin'] - pnl_concated['netProfitMargin_prev_year']) / pnl_concated['netProfitMargin_prev_year']) * 100
-        insights.append(f"The Net Profit Margin was {pnl_concated['netProfitMargin']}%, which changed by {net_profit_margin_change:.2f}% compared to the previous year.")
+    if pnl_concated['netProfitMargin_prev'] != 0:
+        net_profit_margin_change = ((pnl_concated['netProfitMargin'] - pnl_concated['netProfitMargin_prev']) / pnl_concated['netProfitMargin_prev']) * 100
+        insights.append(f"The Net Profit Margin was {pnl_concated['netProfitMargin']}%, which changed by {net_profit_margin_change:.2f}% compared to the previous.")
 
     # Interest Coverage Ratio Insight
-    if pnl_concated['interestCoverageRatio_prev_year'] != 0:
-        interest_coverage_change = ((pnl_concated['interestCoverageRatio'] - pnl_concated['interestCoverageRatio_prev_year']) / pnl_concated['interestCoverageRatio_prev_year']) * 100
-        insights.append(f"The Interest Coverage Ratio was {pnl_concated['interestCoverageRatio']}, which changed by {interest_coverage_change:.2f}% compared to the previous year.")
+    if pnl_concated['interestCoverageRatio_prev'] != 0:
+        interest_coverage_change = ((pnl_concated['interestCoverageRatio'] - pnl_concated['interestCoverageRatio_prev']) / pnl_concated['interestCoverageRatio_prev']) * 100
+        insights.append(f"The Interest Coverage Ratio was {pnl_concated['interestCoverageRatio']}, which changed by {interest_coverage_change:.2f}% compared to the previous.")
 
     # Revenue Gpnl_concatedth Insight
-    if pnl_concated['totalRevenue_prev_year'] != 0:
-        revenue_gpnl_concatedth = ((pnl_concated['totalRevenue'] - pnl_concated['totalRevenue_prev_year']) / pnl_concated['totalRevenue_prev_year']) * 100
-        insights.append(f"Total Revenue was {pnl_concated['totalRevenue']}, which changed by {revenue_gpnl_concatedth:.2f}% compared to the previous year.")
+    if pnl_concated['totalRevenue_prev'] != 0:
+        revenue_gpnl_concatedth = ((pnl_concated['totalRevenue'] - pnl_concated['totalRevenue_prev']) / pnl_concated['totalRevenue_prev']) * 100
+        insights.append(f"Total Revenue was {pnl_concated['totalRevenue']}, which changed by {revenue_gpnl_concatedth:.2f}% compared to the previous.")
 
     # Net Income Trends
-    if pnl_concated['netIncome_prev_year'] != 0:
-        net_income_change = ((pnl_concated['netIncome'] - pnl_concated['netIncome_prev_year']) / pnl_concated['netIncome_prev_year']) * 100
-        insights.append(f"Net Income was {pnl_concated['netIncome']}, which changed by {net_income_change:.2f}% compared to the previous year.")
+    if pnl_concated['netIncome_prev'] != 0:
+        net_income_change = ((pnl_concated['netIncome'] - pnl_concated['netIncome_prev']) / pnl_concated['netIncome_prev']) * 100
+        insights.append(f"Net Income was {pnl_concated['netIncome']}, which changed by {net_income_change:.2f}% compared to the previous.")
 
     # Operating Expenses Insight
-    if pnl_concated['operatingExpenses_prev_year'] != 0:
-        operating_expenses_change = ((pnl_concated['operatingExpenses'] - pnl_concated['operatingExpenses_prev_year']) / pnl_concated['operatingExpenses_prev_year']) * 100
-        insights.append(f"Operating Expenses were {pnl_concated['operatingExpenses']}, which changed by {operating_expenses_change:.2f}% compared to the previous year.")
+    if pnl_concated['operatingExpenses_prev'] != 0:
+        operating_expenses_change = ((pnl_concated['operatingExpenses'] - pnl_concated['operatingExpenses_prev']) / pnl_concated['operatingExpenses_prev']) * 100
+        insights.append(f"Operating Expenses were {pnl_concated['operatingExpenses']}, which changed by {operating_expenses_change:.2f}% compared to the previous.")
 
     # EBITDA Insight
-    if pnl_concated['ebitda_prev_year'] != 0:
-        ebitda_change = ((pnl_concated['ebitda'] - pnl_concated['ebitda_prev_year']) / pnl_concated['ebitda_prev_year']) * 100
-        insights.append(f"EBITDA was {pnl_concated['ebitda']}, which changed by {ebitda_change:.2f}% compared to the previous year.")
+    if pnl_concated['ebitda_prev'] != 0:
+        ebitda_change = ((pnl_concated['ebitda'] - pnl_concated['ebitda_prev']) / pnl_concated['ebitda_prev']) * 100
+        insights.append(f"EBITDA was {pnl_concated['ebitda']}, which changed by {ebitda_change:.2f}% compared to the previous.")
 
     return " ".join(insights)
 
