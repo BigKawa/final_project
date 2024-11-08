@@ -274,47 +274,6 @@ def generate_insights_pnl_multi_year(dataframe):
     return insights_list
 
 
-# cashflow functions
-
-def calculate_cashflow_kpis(cf_dataframe, revenue_series=None):
-    """
-    Calculates key performance indicators (KPIs) for a given cash flow dataframe.
-
-    Parameters
-    ----------
-    cf_dataframe : pandas.DataFrame
-        A dataframe containing cash flow data with columns like 'operatingCashflow', 'capitalExpenditures', 'dividendPayoutCommonStock'.
-    revenue_series : pandas.Series (optional)
-        A series containing revenue data for calculating cash flow margin.
-
-    Returns
-    -------
-    pandas.DataFrame
-        The dataframe with new columns for key cash flow metrics.
-    """
-    
-    # Calculate Free Cash Flow (FCF)
-    cf_dataframe['freeCashFlow'] = cf_dataframe['operatingCashflow'] - cf_dataframe['capitalExpenditures']
-    
-    # Calculate Capital Expenditure Ratio (Operating Cash Flow / Capital Expenditures)
-    cf_dataframe['capitalExpenditureRatio'] = cf_dataframe['operatingCashflow'] / cf_dataframe['capitalExpenditures']
-    
-    # Calculate Operating Cash Flow Growth (Year-over-Year Growth)
-    cf_dataframe['operatingCashFlowGrowth'] = cf_dataframe['operatingCashflow'].pct_change() * 100
-
-    # Calculate Dividend Payout Ratio from Cash Flow
-    if 'dividendPayoutCommonStock' in cf_dataframe.columns:
-        cf_dataframe['dividendPayoutRatio'] = cf_dataframe['dividendPayoutCommonStock'] / cf_dataframe['operatingCashflow']
-    
-    # Calculate Cash Flow Margin if revenue data is provided
-    if revenue_series is not None:
-        cf_dataframe['cashFlowMargin'] = (cf_dataframe['operatingCashflow'] / revenue_series) * 100
-    
-    # Calculate Reinvestment Ratio
-    cf_dataframe['reinvestmentRatio'] = cf_dataframe['capitalExpenditures'] / cf_dataframe['operatingCashflow']
-    
-    return cf_dataframe
-
 
 def calculating_kpi_pnl(pnl_dataframe):  
     """
@@ -347,3 +306,112 @@ def calculating_kpi_pnl(pnl_dataframe):
     
     return pnl_dataframe
     
+
+# cashflow functions
+
+def calculate_kpi_cf(cf_dataframe, revenue_series=None):
+    """
+    Calculates key performance indicators (KPIs) for a given cash flow dataframe.
+
+    Parameters
+    ----------
+    cf_dataframe : pandas.DataFrame
+        A dataframe containing cash flow data with columns like 'operatingCashflow', 'capitalExpenditures', 'dividendPayoutCommonStock'.
+    revenue_series : pandas.Series (optional)
+        A series containing revenue data for calculating cash flow margin.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The dataframe with new columns for key cash flow metrics.
+    """
+    
+    # Calculate Free Cash Flow (FCF)
+    cf_dataframe['freeCashFlow'] = cf_dataframe['operatingCashflow'] - cf_dataframe['capitalExpenditures']
+    
+    # Calculate Capital Expenditure Ratio (Operating Cash Flow / Capital Expenditures)
+    cf_dataframe['capitalExpenditureRatio'] = cf_dataframe['operatingCashflow'] / cf_dataframe['capitalExpenditures']
+    
+    # Calculate Operating Cash Flow Growth
+    # Reverse the DataFrame to ensure ascending order for pct_change calculation
+    cf_dataframe_reversed = cf_dataframe.iloc[::-1].copy()
+    cf_dataframe_reversed['operatingCashFlowGrowth'] = cf_dataframe_reversed['operatingCashflow'].pct_change() * 100
+    cf_dataframe = cf_dataframe_reversed.iloc[::-1]  # Reverse back to original order
+    
+    # Calculate Dividend Payout Ratio from Cash Flow
+    if 'dividendPayoutCommonStock' in cf_dataframe.columns:
+        cf_dataframe['dividendPayoutRatio'] = cf_dataframe['dividendPayoutCommonStock'] / cf_dataframe['operatingCashflow']
+    
+    # Calculate Cash Flow Margin if revenue data is provided
+    if revenue_series is not None:
+        cf_dataframe['cashFlowMargin'] = (cf_dataframe['operatingCashflow'] / revenue_series) * 100
+    
+    # Calculate Reinvestment Ratio
+    cf_dataframe['reinvestmentRatio'] = cf_dataframe['capitalExpenditures'] / cf_dataframe['operatingCashflow']
+    
+    return cf_dataframe
+
+
+def generate_cashflow_insights(df):
+    """
+    Analyzes key cash flow indicators from a DataFrame row and generates a cohesive narrative interpretation,
+    categorizing performance into low, mid, and high classifications.
+
+    Parameters
+    ----------
+    df : pandas.Series
+        A row from the dataframe containing cash flow KPI metrics such as 'freeCashFlow', 'capitalExpenditureRatio',
+        'operatingCashFlowGrowth', 'dividendPayoutRatio', etc.
+
+    Returns
+    -------
+    str
+        A single, cohesive text containing a narrative interpretation of the company's performance based on the cash flow KPI data.
+    """
+    insights = []
+
+    # Free Cash Flow Insight (Classify as Low, Mid, High)
+    if df['freeCashFlow'] < 0:
+        insights.append(f"In {df['fiscalDateEnding']}, the company reported a **negative Free Cash Flow** of {df['freeCashFlow']}, which suggests challenges in generating enough cash to cover its capital expenditures. This could indicate potential liquidity issues.")
+    elif df['freeCashFlow'] <= 5e9:
+        insights.append(f"In {df['fiscalDateEnding']}, the company generated a **low Free Cash Flow** of {df['freeCashFlow']}. While still positive, this may limit the company's flexibility to reinvest in growth or return value to shareholders.")
+    elif df['freeCashFlow'] <= 2e10:
+        insights.append(f"In {df['fiscalDateEnding']}, the company reported a **moderate Free Cash Flow** of {df['freeCashFlow']}, indicating a balanced cash generation capability, sufficient to meet capital requirements and fund some growth initiatives.")
+    else:
+        insights.append(f"In {df['fiscalDateEnding']}, the company generated a **high Free Cash Flow** of {df['freeCashFlow']}, indicating strong cash generation and suggesting significant potential for expansion, dividend payouts, or debt reduction.")
+
+    # Capital Expenditure Ratio Insight (Classify as Low, Mid, High)
+    if df['capitalExpenditureRatio'] < 1:
+        insights.append(f"The Capital Expenditure Ratio was **{df['capitalExpenditureRatio']:.2f}** (classified as **high**), meaning a significant portion of operating cash flow was used for capital investments. This highlights an aggressive reinvestment approach, likely focused on future growth.")
+    elif df['capitalExpenditureRatio'] <= 2:
+        insights.append(f"The Capital Expenditure Ratio was **{df['capitalExpenditureRatio']:.2f}** (classified as **moderate**), indicating a balanced approach to cash utilization between investment in future growth and cash retention.")
+    else:
+        insights.append(f"The Capital Expenditure Ratio was **{df['capitalExpenditureRatio']:.2f}** (classified as **low**), suggesting the company is retaining a substantial portion of its operating cash flow, which could imply a conservative stance toward capital reinvestment.")
+
+    # Operating Cash Flow Growth Insight (Classify as Negative, Low, High)
+    if df['operatingCashFlowGrowth'] < 0:
+        insights.append(f"The Operating Cash Flow Growth was **{df['operatingCashFlowGrowth']:.2f}%**, indicating a **negative growth** compared to the previous year. This could be a warning sign of declining efficiency in generating cash from operations.")
+    elif df['operatingCashFlowGrowth'] <= 10:
+        insights.append(f"The Operating Cash Flow Growth was **{df['operatingCashFlowGrowth']:.2f}%**, which is classified as **low growth**. While positive, the limited growth rate may suggest challenges in improving cash generation efficiency.")
+    else:
+        insights.append(f"The Operating Cash Flow Growth was **{df['operatingCashFlowGrowth']:.2f}%**, classified as **high growth**, indicating significant improvement in cash generation over the past year, which reflects well on the company's operational efficiency.")
+
+    # Dividend Payout Ratio Insight (Classify as Low, Mid, High)
+    if 'dividendPayoutRatio' in df:
+        if df['dividendPayoutRatio'] <= 0.25:
+            insights.append(f"The Dividend Payout Ratio was **{df['dividendPayoutRatio']:.2f}** (classified as **low**), suggesting that the company retains a large portion of its cash flow for reinvestment and growth.")
+        elif df['dividendPayoutRatio'] <= 0.5:
+            insights.append(f"The Dividend Payout Ratio was **{df['dividendPayoutRatio']:.2f}** (classified as **moderate**), indicating a balanced strategy between rewarding shareholders and retaining cash for future opportunities.")
+        else:
+            insights.append(f"The Dividend Payout Ratio was **{df['dividendPayoutRatio']:.2f}** (classified as **high**), implying that the company is distributing a substantial portion of its cash flow as dividends, which may limit its ability to reinvest into growth initiatives.")
+
+    # Reinvestment Ratio Insight (Classify as Low, Mid, High)
+    if df['reinvestmentRatio'] > 0.5:
+        insights.append(f"The company **reinvested** **{df['reinvestmentRatio']:.2f}** (classified as **high**) of its cash flow into its business, indicating a strong focus on expansion and growth initiatives.")
+    elif df['reinvestmentRatio'] > 0.2:
+        insights.append(f"The company reinvested **{df['reinvestmentRatio']:.2f}** (classified as **moderate**) of its cash flow, suggesting a balanced approach to using cash for reinvestment and other purposes.")
+    else:
+        insights.append(f"The company reinvested only **{df['reinvestmentRatio']:.2f}** (classified as **low**) of its cash flow, indicating a limited focus on reinvestment, potentially prioritizing cash retention or dividend payouts.")
+
+    # Join all insights into a single narrative text
+    return " ".join(insights)
