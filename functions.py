@@ -1,6 +1,9 @@
 import pandas as pd
 
-def second_clean(dataframe):
+
+# General functions for all dataframes
+
+def cleaning(dataframe):
     """
     This function is used to clean the given dataframe by transposing it, setting the index as fiscalDateEnding,
     and filling NaN values with 0. It is used to clean the income statement data of Microsoft.
@@ -30,38 +33,33 @@ def second_clean(dataframe):
     dataframe.reset_index(drop=True, inplace=True)
     return dataframe
 
-def calculating_kpi_pnl(pnl_dataframe):  
+
+def create_prev_year(df_current_year):    
     """
-    Calculates key performance indicators (KPIs) for a given income statement dataframe.
+    Creates a new dataframe df_prev with data from the previous year.
 
     Parameters
     ----------
-    pnl_dataframe : pandas.DataFrame
-        A dataframe containing income statement data with columns such as 'grossProfit', 'totalRevenue',
-        'operatingIncome', 'netIncome', 'ebit', and 'interestExpense'.
+    df_current_year : pandas.DataFrame
+        A dataframe containing the current year's data for the company.
 
     Returns
     -------
     pandas.DataFrame
-        The dataframe with new columns for Gross Margin, Operating Margin, Net Profit Margin, and
-        Interest Coverage Ratio.
+        The newly created dataframe with data from the previous year.
     """
     
-    # Calculate Gross Margin as a percentage
-    pnl_dataframe["grossMargin"] = (pnl_dataframe["grossProfit"] / pnl_dataframe["totalRevenue"]) * 100
+    # Create a new pnl dataframe with previous year data
+    df_prev = df_current_year.set_index("fiscalDateEnding").shift(-1)
+    df_prev.fillna(0,inplace=True)
+    df_prev = df_prev.select_dtypes(exclude=['object']).astype(int).reset_index(drop=True)
+    df_prev.columns = [F"{col}_prev" for col in df_prev.columns]
     
-    # Calculate Operating Margin as a percentage
-    pnl_dataframe["operatingMargin"] = (pnl_dataframe["operatingIncome"] / pnl_dataframe["totalRevenue"]) * 100
-    
-    # Calculate Net Profit Margin as a percentage
-    pnl_dataframe["netProfitMargin"] = (pnl_dataframe["netIncome"] / pnl_dataframe["totalRevenue"]) * 100
+    return df_prev
 
-    # Calculate Interest Coverage Ratio
-    pnl_dataframe["interestCoverageRatio"] = pnl_dataframe["ebit"] / pnl_dataframe["interestExpense"]
     
-    return pnl_dataframe
-    
-    
+
+# pnl functions
 def generate_automated_insights(df):
     """
     Analyzes key performance indicators (KPIs) from a df of data and generates a cohesive narrative interpretation.
@@ -166,30 +164,6 @@ def generate_insights_pnl(pnl_concated):
 
     return " ".join(insights)
 
-
-
-def create_prev_year(df_current_year):    
-    """
-    Creates a new dataframe df_prev with data from the previous year.
-
-    Parameters
-    ----------
-    df_current_year : pandas.DataFrame
-        A dataframe containing the current year's data for the company.
-
-    Returns
-    -------
-    pandas.DataFrame
-        The newly created dataframe with data from the previous year.
-    """
-    
-    # Create a new pnl dataframe with previous year data
-    df_prev = df_current_year.set_index("fiscalDateEnding").shift(-1)
-    df_prev.fillna(0,inplace=True)
-    df_prev = df_prev.select_dtypes(exclude=['object']).astype(int).reset_index(drop=True)
-    df_prev.columns = [F"{col}_prev" for col in df_prev.columns]
-    
-    return df_prev
 
 def yeah_comparison_pnl(pattern_df_pnl):
     """
@@ -298,3 +272,78 @@ def generate_insights_pnl_multi_year(dataframe):
         else:
             insights_list.append('Insufficient data for trend analysis over three years.')
     return insights_list
+
+
+# cashflow functions
+
+def calculate_cashflow_kpis(cf_dataframe, revenue_series=None):
+    """
+    Calculates key performance indicators (KPIs) for a given cash flow dataframe.
+
+    Parameters
+    ----------
+    cf_dataframe : pandas.DataFrame
+        A dataframe containing cash flow data with columns like 'operatingCashflow', 'capitalExpenditures', 'dividendPayoutCommonStock'.
+    revenue_series : pandas.Series (optional)
+        A series containing revenue data for calculating cash flow margin.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The dataframe with new columns for key cash flow metrics.
+    """
+    
+    # Calculate Free Cash Flow (FCF)
+    cf_dataframe['freeCashFlow'] = cf_dataframe['operatingCashflow'] - cf_dataframe['capitalExpenditures']
+    
+    # Calculate Capital Expenditure Ratio (Operating Cash Flow / Capital Expenditures)
+    cf_dataframe['capitalExpenditureRatio'] = cf_dataframe['operatingCashflow'] / cf_dataframe['capitalExpenditures']
+    
+    # Calculate Operating Cash Flow Growth (Year-over-Year Growth)
+    cf_dataframe['operatingCashFlowGrowth'] = cf_dataframe['operatingCashflow'].pct_change() * 100
+
+    # Calculate Dividend Payout Ratio from Cash Flow
+    if 'dividendPayoutCommonStock' in cf_dataframe.columns:
+        cf_dataframe['dividendPayoutRatio'] = cf_dataframe['dividendPayoutCommonStock'] / cf_dataframe['operatingCashflow']
+    
+    # Calculate Cash Flow Margin if revenue data is provided
+    if revenue_series is not None:
+        cf_dataframe['cashFlowMargin'] = (cf_dataframe['operatingCashflow'] / revenue_series) * 100
+    
+    # Calculate Reinvestment Ratio
+    cf_dataframe['reinvestmentRatio'] = cf_dataframe['capitalExpenditures'] / cf_dataframe['operatingCashflow']
+    
+    return cf_dataframe
+
+
+def calculating_kpi_pnl(pnl_dataframe):  
+    """
+    Calculates key performance indicators (KPIs) for a given income statement dataframe.
+
+    Parameters
+    ----------
+    pnl_dataframe : pandas.DataFrame
+        A dataframe containing income statement data with columns such as 'grossProfit', 'totalRevenue',
+        'operatingIncome', 'netIncome', 'ebit', and 'interestExpense'.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The dataframe with new columns for Gross Margin, Operating Margin, Net Profit Margin, and
+        Interest Coverage Ratio.
+    """
+    
+    # Calculate Gross Margin as a percentage
+    pnl_dataframe["grossMargin"] = (pnl_dataframe["grossProfit"] / pnl_dataframe["totalRevenue"]) * 100
+    
+    # Calculate Operating Margin as a percentage
+    pnl_dataframe["operatingMargin"] = (pnl_dataframe["operatingIncome"] / pnl_dataframe["totalRevenue"]) * 100
+    
+    # Calculate Net Profit Margin as a percentage
+    pnl_dataframe["netProfitMargin"] = (pnl_dataframe["netIncome"] / pnl_dataframe["totalRevenue"]) * 100
+
+    # Calculate Interest Coverage Ratio
+    pnl_dataframe["interestCoverageRatio"] = pnl_dataframe["ebit"] / pnl_dataframe["interestExpense"]
+    
+    return pnl_dataframe
+    
