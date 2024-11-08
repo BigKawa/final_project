@@ -106,7 +106,7 @@ def generate_automated_insights(df):
 
 
 
-def generate_insights_pnl(pnl_concated):
+def generate_pnl_yoy_insights(pnl_concated):
     """
     Generates enhanced financial insights for each in the income statement dataframe by comparing current and previous's data.
 
@@ -415,3 +415,217 @@ def generate_cashflow_insights(df):
 
     # Join all insights into a single narrative text
     return " ".join(insights)
+
+
+
+def generate_cf_yoy_insights(df):
+    """
+    Analyzes key cash flow indicators from a DataFrame row and generates a cohesive narrative interpretation,
+    comparing the current year's metrics with the previous year's metrics.
+
+    Parameters
+    ----------
+    df : pandas.Series
+        A row from the dataframe containing current and previous year cash flow KPI metrics such as 
+        'freeCashFlow', 'capitalExpenditureRatio', 'operatingCashFlowGrowth', 'dividendPayoutRatio', 
+        and their corresponding previous year columns like 'freeCashFlow_prev', 'capitalExpenditureRatio_prev', etc.
+
+    Returns
+    -------
+    str
+        A single, cohesive text containing a narrative interpretation of the company's year-over-year performance based on the cash flow KPI data.
+    """
+    yoy_insights = []
+
+    # Free Cash Flow Year-Over-Year Insight
+    if 'freeCashFlow_prev' in df:
+        if df['freeCashFlow'] > df['freeCashFlow_prev']:
+            yoy_insights.append(f"In {df['fiscalDateEnding']}, Free Cash Flow increased to {df['freeCashFlow']}, compared to {df['freeCashFlow_prev']} in the previous year, indicating improved cash generation efficiency.")
+        elif df['freeCashFlow'] < df['freeCashFlow_prev']:
+            yoy_insights.append(f"In {df['fiscalDateEnding']}, Free Cash Flow decreased to {df['freeCashFlow']}, down from {df['freeCashFlow_prev']} in the previous year, suggesting potential challenges in cash generation.")
+        else:
+            yoy_insights.append(f"In {df['fiscalDateEnding']}, Free Cash Flow remained consistent at {df['freeCashFlow']}, showing stability compared to the previous year.")
+
+    # Capital Expenditure Ratio Year-Over-Year Insight
+    if 'capitalExpenditureRatio_prev' in df:
+        if df['capitalExpenditureRatio'] < df['capitalExpenditureRatio_prev']:
+            yoy_insights.append(f"The Capital Expenditure Ratio decreased to {df['capitalExpenditureRatio']:.2f} from {df['capitalExpenditureRatio_prev']:.2f} in the previous year, indicating a more conservative investment approach.")
+        elif df['capitalExpenditureRatio'] > df['capitalExpenditureRatio_prev']:
+            yoy_insights.append(f"The Capital Expenditure Ratio increased to {df['capitalExpenditureRatio']:.2f}, up from {df['capitalExpenditureRatio_prev']:.2f}, suggesting increased reinvestment in growth initiatives.")
+        else:
+            yoy_insights.append(f"The Capital Expenditure Ratio remained steady at {df['capitalExpenditureRatio']:.2f}, showing consistency in investment approach compared to the previous year.")
+
+    # Operating Cash Flow Growth Year-Over-Year Insight
+    if 'operatingCashFlowGrowth_prev' in df:
+        if df['operatingCashFlowGrowth'] > df['operatingCashFlowGrowth_prev']:
+            yoy_insights.append(f"The Operating Cash Flow Growth rate improved to {df['operatingCashFlowGrowth']:.2f}% from {df['operatingCashFlowGrowth_prev']:.2f}%, highlighting enhanced efficiency in generating cash from operations.")
+        elif df['operatingCashFlowGrowth'] < df['operatingCashFlowGrowth_prev']:
+            yoy_insights.append(f"The Operating Cash Flow Growth rate declined to {df['operatingCashFlowGrowth']:.2f}% from {df['operatingCashFlowGrowth_prev']:.2f}%, which may indicate reduced operational efficiency.")
+        else:
+            yoy_insights.append(f"The Operating Cash Flow Growth rate remained unchanged at {df['operatingCashFlowGrowth']:.2f}%, showing stable performance.")
+
+    # Dividend Payout Ratio Year-Over-Year Insight
+    if 'dividendPayoutRatio_prev' in df:
+        if df['dividendPayoutRatio'] > df['dividendPayoutRatio_prev']:
+            yoy_insights.append(f"The Dividend Payout Ratio increased to {df['dividendPayoutRatio']:.2f}, compared to {df['dividendPayoutRatio_prev']:.2f} in the previous year, showing a greater focus on rewarding shareholders.")
+        elif df['dividendPayoutRatio'] < df['dividendPayoutRatio_prev']:
+            yoy_insights.append(f"The Dividend Payout Ratio decreased to {df['dividendPayoutRatio']:.2f} from {df['dividendPayoutRatio_prev']:.2f}, suggesting more cash was retained for reinvestment.")
+        else:
+            yoy_insights.append(f"The Dividend Payout Ratio remained stable at {df['dividendPayoutRatio']:.2f}, indicating no change in the company’s dividend policy compared to the previous year.")
+
+    # Reinvestment Ratio Year-Over-Year Insight
+    if 'reinvestmentRatio_prev' in df:
+        if df['reinvestmentRatio'] > df['reinvestmentRatio_prev']:
+            yoy_insights.append(f"The Reinvestment Ratio increased to {df['reinvestmentRatio']:.2f}, up from {df['reinvestmentRatio_prev']:.2f}, reflecting a stronger focus on business growth.")
+        elif df['reinvestmentRatio'] < df['reinvestmentRatio_prev']:
+            yoy_insights.append(f"The Reinvestment Ratio decreased to {df['reinvestmentRatio']:.2f}, down from {df['reinvestmentRatio_prev']:.2f}, indicating a reduced emphasis on reinvestment.")
+        else:
+            yoy_insights.append(f"The Reinvestment Ratio remained consistent at {df['reinvestmentRatio']:.2f}, showing a stable strategy toward reinvestment compared to the previous year.")
+
+    # Join all year-over-year insights into a single narrative text
+    return " ".join(yoy_insights)
+
+def year_comparison_cf(pattern_df_cf):
+    """
+    Detects financial patterns in cash flow metrics over multiple years and generates insights as a single string.
+
+    Parameters
+    ----------
+    pattern_df_cf : pandas.Series
+        A row from the dataframe containing cash flow data over multiple years.
+
+    Returns
+    -------
+    str
+        A string providing insights about detected patterns in Free Cash Flow, Capital Expenditure Ratio,
+        Operating Cash Flow Growth, Dividend Payout Ratio, and Reinvestment Ratio.
+    """
+    insights = []
+
+    # Helper function to calculate growth
+    def calculate_growth(current, previous):
+        if pd.notna(previous) and previous != 0:
+            return (current - previous) / previous * 100
+        return None
+
+    # Pattern 1: Change in Free Cash Flow
+    if 'freeCashFlow' in pattern_df_cf.index:
+        free_cash_flow_current = pattern_df_cf['freeCashFlow']
+        free_cash_flow_prev = pattern_df_cf.get('freeCashFlow_prev', None)
+        growth = calculate_growth(free_cash_flow_current, free_cash_flow_prev)
+        if growth is not None:
+            if growth > 0:
+                insights.append(f"Free Cash Flow has increased by {growth:.2f}% compared to the previous year, indicating improved cash generation.")
+            elif growth < 0:
+                insights.append(f"Free Cash Flow has decreased by {abs(growth):.2f}% compared to the previous year, suggesting potential challenges in cash generation.")
+
+    # Pattern 2: Change in Capital Expenditure Ratio
+    if 'capitalExpenditureRatio' in pattern_df_cf.index:
+        capex_ratio_current = pattern_df_cf['capitalExpenditureRatio']
+        capex_ratio_prev = pattern_df_cf.get('capitalExpenditureRatio_prev', None)
+        change = calculate_growth(capex_ratio_current, capex_ratio_prev)
+        if change is not None:
+            if change > 0:
+                insights.append(f"Capital Expenditure Ratio has increased by {change:.2f}% compared to the previous year, indicating a higher focus on reinvestment in growth.")
+            elif change < 0:
+                insights.append(f"Capital Expenditure Ratio has decreased by {abs(change):.2f}% compared to the previous year, suggesting a more conservative investment approach.")
+
+    # Pattern 3: Change in Operating Cash Flow Growth
+    if 'operatingCashFlowGrowth' in pattern_df_cf.index:
+        ocf_growth_current = pattern_df_cf['operatingCashFlowGrowth']
+        ocf_growth_prev = pattern_df_cf.get('operatingCashFlowGrowth_prev', None)
+        change = calculate_growth(ocf_growth_current, ocf_growth_prev)
+        if change is not None:
+            if change > 0:
+                insights.append(f"Operating Cash Flow Growth has improved by {change:.2f}% compared to the previous year, reflecting increased operational efficiency in generating cash.")
+            elif change < 0:
+                insights.append(f"Operating Cash Flow Growth has decreased by {abs(change):.2f}% compared to the previous year, which may indicate a decline in cash generation efficiency.")
+
+    # Pattern 4: Change in Dividend Payout Ratio
+    if 'dividendPayoutRatio' in pattern_df_cf.index:
+        dividend_payout_current = pattern_df_cf['dividendPayoutRatio']
+        dividend_payout_prev = pattern_df_cf.get('dividendPayoutRatio_prev', None)
+        change = calculate_growth(dividend_payout_current, dividend_payout_prev)
+        if change is not None:
+            if change > 0:
+                insights.append(f"Dividend Payout Ratio has increased by {change:.2f}% compared to the previous year, highlighting a stronger focus on returning value to shareholders.")
+            elif change < 0:
+                insights.append(f"Dividend Payout Ratio has decreased by {abs(change):.2f}% compared to the previous year, suggesting more cash is being retained for reinvestment.")
+
+    # Pattern 5: Change in Reinvestment Ratio
+    if 'reinvestmentRatio' in pattern_df_cf.index:
+        reinvestment_ratio_current = pattern_df_cf['reinvestmentRatio']
+        reinvestment_ratio_prev = pattern_df_cf.get('reinvestmentRatio_prev', None)
+        change = calculate_growth(reinvestment_ratio_current, reinvestment_ratio_prev)
+        if change is not None:
+            if change > 0:
+                insights.append(f"Reinvestment Ratio has increased by {change:.2f}% compared to the previous year, indicating a stronger focus on business growth.")
+            elif change < 0:
+                insights.append(f"Reinvestment Ratio has decreased by {abs(change):.2f}% compared to the previous year, suggesting a reduced emphasis on reinvestment.")
+
+    # Combine all insights into a single narrative string
+    return " ".join(insights)
+
+
+def generate_insights_cf_multi_year(dataframe):
+    """
+    Detects financial patterns in multiple cash flow metrics over multiple years and generates insights as a list of strings.
+
+    Parameters
+    ----------
+    dataframe : pandas.DataFrame
+        A dataframe containing financial data for multiple years with cash flow KPIs as columns.
+
+    Returns
+    -------
+    list
+        A list of strings providing insights about detected patterns in cash flow metrics like Free Cash Flow,
+        Capital Expenditure Ratio, Operating Cash Flow Growth, Dividend Payout Ratio, and Reinvestment Ratio.
+    """
+    insights_list = []
+
+    # List of KPIs to analyze
+    kpis = ['operatingCashflow',
+       'paymentsForOperatingActivities', 'proceedsFromOperatingActivities',
+       'changeInOperatingLiabilities', 'changeInOperatingAssets',
+       'depreciationDepletionAndAmortization', 'capitalExpenditures',
+       'changeInReceivables', 'changeInInventory', 'profitLoss',
+       'cashflowFromInvestment', 'cashflowFromFinancing',
+       'proceedsFromRepaymentsOfShortTermDebt',
+       'paymentsForRepurchaseOfCommonStock', 'paymentsForRepurchaseOfEquity',
+       'paymentsForRepurchaseOfPreferredStock', 'dividendPayout',
+       'dividendPayoutCommonStock', 'dividendPayoutPreferredStock',
+       'proceedsFromIssuanceOfCommonStock',
+       'proceedsFromIssuanceOfLongTermDebtAndCapitalSecuritiesNet',
+       'proceedsFromIssuanceOfPreferredStock',
+       'proceedsFromRepurchaseOfEquity', 'proceedsFromSaleOfTreasuryStock',
+       'changeInCashAndCashEquivalents', 'changeInExchangeRate', 'netIncome',
+       'freeCashFlow', 'capitalExpenditureRatio', 'operatingCashFlowGrowth',
+       'dividendPayoutRatio', 'reinvestmentRatio']
+
+    for index, row in dataframe.iterrows():
+        if index + 2 < len(dataframe):
+            current_year = row['fiscalDateEnding']
+            insights = []
+
+            for kpi in kpis:
+                current_value = row[kpi]
+                next_value = dataframe.iloc[index + 1][kpi]
+                next_next_value = dataframe.iloc[index + 2][kpi]
+
+                # Analyze trends for each KPI across three years
+                if current_value > next_value and next_value > next_next_value:
+                    insights.append(f"The {kpi.replace('_', ' ')} has grown consistently over the past three years ending in {current_year}.")
+                elif current_value < next_value and next_value < next_next_value:
+                    insights.append(f"The {kpi.replace('_', ' ')} has declined consistently over the past three years ending in {current_year}.")
+                elif current_value == next_value and next_value == next_next_value:
+                    insights.append(f"The {kpi.replace('_', ' ')} has remained stable over the past three years ending in {current_year}.")
+                else:
+                    insights.append(f"The {kpi.replace('_', ' ')} has shown fluctuations over the past three years ending in {current_year}.")
+
+            # Combine the insights for the current row into a single string
+            insights_list.append(' '.join(insights))
+        else:
+            insights_list.append('Insufficient data for trend analysis over three years.')
+
+    return insights_list
