@@ -29,7 +29,7 @@ def cleaning(dataframe):
     # Drop the reportedCurrency column
     dataframe = dataframe.drop(columns="reportedCurrency")
     # Convert all columns to numeric and handle NaN values
-    dataframe = dataframe.apply(pd.to_numeric, errors='coerce').fillna(0).astype(int)
+    dataframe = dataframe.apply(pd.to_numeric, errors='coerce').fillna(0)
     dataframe.reset_index(drop=True, inplace=True)
     return dataframe
 
@@ -57,7 +57,6 @@ def create_prev_year(df_current_year):
     
     return df_prev
 
-    
 
 # pnl functions
 def generate_automated_insights(df):
@@ -486,14 +485,14 @@ def generate_cf_yoy_insights(df):
     return " ".join(yoy_insights)
 
 
-# Function to detect patterns in cash flow
-def year_comparison_cf(pattern_df_cf):
+# Check with previous year percentage
+def year_comparison_cf(year_comparison_df):
     """
     Detects financial patterns in cash flow metrics over multiple years and generates insights as a single string.
-
+    Use the apply function
     Parameters
     ----------
-    pattern_df_cf : pandas.Series
+    year_comparison_df : pandas.Series
         A row from the dataframe containing cash flow data over multiple years.
 
     Returns
@@ -510,10 +509,10 @@ def year_comparison_cf(pattern_df_cf):
             return (current - previous) / previous * 100
         return None
 
-    # Pattern 1: Change in Free Cash Flow
-    if 'freeCashFlow' in pattern_df_cf.index:
-        free_cash_flow_current = pattern_df_cf['freeCashFlow']
-        free_cash_flow_prev = pattern_df_cf.get('freeCashFlow_prev', None)
+    # 1: Change in Free Cash Flow
+    if 'freeCashFlow' in year_comparison_df.index:
+        free_cash_flow_current = year_comparison_df['freeCashFlow']
+        free_cash_flow_prev = year_comparison_df.get('freeCashFlow_prev', None)
         growth = calculate_growth(free_cash_flow_current, free_cash_flow_prev)
         if growth is not None:
             if growth > 0:
@@ -521,10 +520,10 @@ def year_comparison_cf(pattern_df_cf):
             elif growth < 0:
                 insights.append(f"Free Cash Flow has decreased by {abs(growth):.2f}% compared to the previous year, suggesting potential challenges in cash generation.")
 
-    # Pattern 2: Change in Capital Expenditure Ratio
-    if 'capitalExpenditureRatio' in pattern_df_cf.index:
-        capex_ratio_current = pattern_df_cf['capitalExpenditureRatio']
-        capex_ratio_prev = pattern_df_cf.get('capitalExpenditureRatio_prev', None)
+    # 2: Change in Capital Expenditure Ratio
+    if 'capitalExpenditureRatio' in year_comparison_df.index:
+        capex_ratio_current = year_comparison_df['capitalExpenditureRatio']
+        capex_ratio_prev = year_comparison_df.get('capitalExpenditureRatio_prev', None)
         change = calculate_growth(capex_ratio_current, capex_ratio_prev)
         if change is not None:
             if change > 0:
@@ -532,10 +531,10 @@ def year_comparison_cf(pattern_df_cf):
             elif change < 0:
                 insights.append(f"Capital Expenditure Ratio has decreased by {abs(change):.2f}% compared to the previous year, suggesting a more conservative investment approach.")
 
-    # Pattern 3: Change in Operating Cash Flow Growth
-    if 'operatingCashFlowGrowth' in pattern_df_cf.index:
-        ocf_growth_current = pattern_df_cf['operatingCashFlowGrowth']
-        ocf_growth_prev = pattern_df_cf.get('operatingCashFlowGrowth_prev', None)
+    # 3: Change in Operating Cash Flow Growth
+    if 'operatingCashFlowGrowth' in year_comparison_df.index:
+        ocf_growth_current = year_comparison_df['operatingCashFlowGrowth']
+        ocf_growth_prev = year_comparison_df.get('operatingCashFlowGrowth_prev', None)
         change = calculate_growth(ocf_growth_current, ocf_growth_prev)
         if change is not None:
             if change > 0:
@@ -543,10 +542,10 @@ def year_comparison_cf(pattern_df_cf):
             elif change < 0:
                 insights.append(f"Operating Cash Flow Growth has decreased by {abs(change):.2f}% compared to the previous year, which may indicate a decline in cash generation efficiency.")
 
-    # Pattern 4: Change in Dividend Payout Ratio
-    if 'dividendPayoutRatio' in pattern_df_cf.index:
-        dividend_payout_current = pattern_df_cf['dividendPayoutRatio']
-        dividend_payout_prev = pattern_df_cf.get('dividendPayoutRatio_prev', None)
+    # 4: Change in Dividend Payout Ratio
+    if 'dividendPayoutRatio' in year_comparison_df.index:
+        dividend_payout_current = year_comparison_df['dividendPayoutRatio']
+        dividend_payout_prev = year_comparison_df.get('dividendPayoutRatio_prev', None)
         change = calculate_growth(dividend_payout_current, dividend_payout_prev)
         if change is not None:
             if change > 0:
@@ -554,10 +553,10 @@ def year_comparison_cf(pattern_df_cf):
             elif change < 0:
                 insights.append(f"Dividend Payout Ratio has decreased by {abs(change):.2f}% compared to the previous year, suggesting more cash is being retained for reinvestment.")
 
-    # Pattern 5: Change in Reinvestment Ratio
-    if 'reinvestmentRatio' in pattern_df_cf.index:
-        reinvestment_ratio_current = pattern_df_cf['reinvestmentRatio']
-        reinvestment_ratio_prev = pattern_df_cf.get('reinvestmentRatio_prev', None)
+    # 5: Change in Reinvestment Ratio
+    if 'reinvestmentRatio' in year_comparison_df.index:
+        reinvestment_ratio_current = year_comparison_df['reinvestmentRatio']
+        reinvestment_ratio_prev = year_comparison_df.get('reinvestmentRatio_prev', None)
         change = calculate_growth(reinvestment_ratio_current, reinvestment_ratio_prev)
         if change is not None:
             if change > 0:
@@ -568,7 +567,7 @@ def year_comparison_cf(pattern_df_cf):
     # Combine all insights into a single narrative string
     return " ".join(insights)
 
-
+# Look for patterns in multiple years
 def generate_insights_cf_multi_year(dataframe):
     """
     Detects financial patterns in multiple cash flow metrics over multiple years and generates insights as a list of strings.
@@ -648,52 +647,408 @@ def calculate_kpi_bs(bs_dataframe):
     bs_dataframe : pandas.DataFrame
         The updated DataFrame with new columns for the calculated KPIs.
     """
+    # Ensure required columns exist before calculations
+    available_columns = bs_dataframe.columns
+
     # Calculate Current Ratio
-    if 'totalCurrentAssets' in bs_dataframe.columns and 'totalCurrentLiabilities' in bs_dataframe.columns:
+    if 'totalCurrentAssets' in available_columns and 'totalCurrentLiabilities' in available_columns:
         bs_dataframe['currentRatio'] = bs_dataframe['totalCurrentAssets'] / bs_dataframe['totalCurrentLiabilities']
 
-    # Calculate Quick Ratio
-    if 'totalCurrentAssets' in bs_dataframe.columns and 'inventory' in bs_dataframe.columns and 'totalCurrentLiabilities' in bs_dataframe.columns:
-        bs_dataframe['quickRatio'] = (bs_dataframe['totalCurrentAssets'] - bs_dataframe['inventory']) / bs_dataframe['totalCurrentLiabilities']
+    # Calculate Quick Ratio (only if inventory data is available)
+    if all(col in available_columns for col in ['totalCurrentAssets', 'inventory', 'totalCurrentLiabilities']):
+        bs_dataframe['quickRatio'] = (
+            (bs_dataframe['totalCurrentAssets'] - bs_dataframe['inventory']) / bs_dataframe['totalCurrentLiabilities']
+        )
 
     # Calculate Cash Ratio
-    if 'cashAndCashEquivalentsAtCarryingValue' in bs_dataframe.columns and 'totalCurrentLiabilities' in bs_dataframe.columns:
+    if 'cashAndCashEquivalentsAtCarryingValue' in available_columns and 'totalCurrentLiabilities' in available_columns:
         bs_dataframe['cashRatio'] = bs_dataframe['cashAndCashEquivalentsAtCarryingValue'] / bs_dataframe['totalCurrentLiabilities']
 
     # Calculate Debt-to-Assets Ratio
-    if 'totalLiabilities' in bs_dataframe.columns and 'totalAssets' in bs_dataframe.columns:
+    if 'totalLiabilities' in available_columns and 'totalAssets' in available_columns:
         bs_dataframe['debtToAssetsRatio'] = bs_dataframe['totalLiabilities'] / bs_dataframe['totalAssets']
 
     # Calculate Debt-to-Equity Ratio
-    if 'totalLiabilities' in bs_dataframe.columns and 'totalShareholderEquity' in bs_dataframe.columns:
+    if 'totalLiabilities' in available_columns and 'totalShareholderEquity' in available_columns:
         bs_dataframe['debtToEquityRatio'] = bs_dataframe['totalLiabilities'] / bs_dataframe['totalShareholderEquity']
 
     # Calculate Equity Ratio
-    if 'totalShareholderEquity' in bs_dataframe.columns and 'totalAssets' in bs_dataframe.columns:
+    if 'totalShareholderEquity' in available_columns and 'totalAssets' in available_columns:
         bs_dataframe['equityRatio'] = bs_dataframe['totalShareholderEquity'] / bs_dataframe['totalAssets']
 
     # Calculate Working Capital
-    if 'totalCurrentAssets' in bs_dataframe.columns and 'totalCurrentLiabilities' in bs_dataframe.columns:
+    if 'totalCurrentAssets' in available_columns and 'totalCurrentLiabilities' in available_columns:
         bs_dataframe['workingCapital'] = bs_dataframe['totalCurrentAssets'] - bs_dataframe['totalCurrentLiabilities']
 
     # Calculate Net Working Capital Ratio
-    if 'workingCapital' in bs_dataframe.columns and 'totalAssets' in bs_dataframe.columns:
+    if 'workingCapital' in bs_dataframe.columns and 'totalAssets' in available_columns:
         bs_dataframe['netWorkingCapitalRatio'] = bs_dataframe['workingCapital'] / bs_dataframe['totalAssets']
 
-    # Calculate Book Value per Share (assuming 'numberOfSharesOutstanding' column exists)
-    if 'totalShareholderEquity' in bs_dataframe.columns and 'numberOfSharesOutstanding' in bs_dataframe.columns:
-        bs_dataframe['bookValuePerShare'] = bs_dataframe['totalShareholderEquity'] / bs_dataframe['numberOfSharesOutstanding']
-
-    # Calculate Debt Coverage Ratio (assuming 'operatingIncome' column exists)
-    if 'operatingIncome' in bs_dataframe.columns and 'totalLiabilities' in bs_dataframe.columns:
-        bs_dataframe['debtCoverageRatio'] = bs_dataframe['operatingIncome'] / bs_dataframe['totalLiabilities']
-
-    # Calculate Interest Coverage Ratio (assuming 'operatingIncome' and 'interestExpense' columns exist)
-    if 'operatingIncome' in bs_dataframe.columns and 'interestExpense' in bs_dataframe.columns:
-        bs_dataframe['interestCoverageRatio'] = bs_dataframe['operatingIncome'] / bs_dataframe['interestExpense']
+    # Calculate Book Value per Share
+    if 'totalShareholderEquity' in available_columns and 'commonStockSharesOutstanding' in available_columns:
+        bs_dataframe['bookValuePerShare'] = bs_dataframe['totalShareholderEquity'] / bs_dataframe['commonStockSharesOutstanding']
 
     return bs_dataframe
 
+def generate_insights_bs(df):
+    """
+    Generate automated insights based on the balance sheet KPIs.
+
+    Parameters
+    ----------
+    df : pandas.Series
+        A row from the dataframe containing balance sheet KPI metrics.
+
+    Returns
+    -------
+    str
+        A narrative interpretation of the company's financial position based on the KPI data.
+    """
+    insights = []
+
+    # Current Ratio Insight
+    if 'currentRatio' in df and pd.notna(df['currentRatio']):
+        if df['currentRatio'] < 1:
+            insights.append(f"In {df['fiscalDateEnding']}, the company's current ratio was {df['currentRatio']:.2f}, indicating potential liquidity concerns.")
+        elif df['currentRatio'] >= 1 and df['currentRatio'] < 2:
+            insights.append(f"In {df['fiscalDateEnding']}, the current ratio was {df['currentRatio']:.2f}, which suggests the company has adequate but not excessive liquidity.")
+        else:
+            insights.append(f"In {df['fiscalDateEnding']}, the current ratio was {df['currentRatio']:.2f}, indicating strong liquidity.")
+
+    # Quick Ratio Insight
+    if 'quickRatio' in df and pd.notna(df['quickRatio']):
+        if df['quickRatio'] < 1:
+            insights.append(f"The quick ratio in {df['fiscalDateEnding']} was {df['quickRatio']:.2f}, which may indicate potential challenges in covering short-term liabilities without relying on inventory.")
+        else:
+            insights.append(f"The quick ratio in {df['fiscalDateEnding']} was {df['quickRatio']:.2f}, indicating good short-term financial health without dependence on inventory.")
+
+    # Cash Ratio Insight
+    if 'cashRatio' in df and pd.notna(df['cashRatio']):
+        if df['cashRatio'] < 0.5:
+            insights.append(f"The cash ratio in {df['fiscalDateEnding']} was {df['cashRatio']:.2f}, suggesting limited cash available to cover short-term liabilities.")
+        elif df['cashRatio'] >= 0.5 and df['cashRatio'] <= 1:
+            insights.append(f"The cash ratio in {df['fiscalDateEnding']} was {df['cashRatio']:.2f}, indicating sufficient cash reserves to cover short-term obligations.")
+        else:
+            insights.append(f"The cash ratio in {df['fiscalDateEnding']} was {df['cashRatio']:.2f}, highlighting strong cash reserves.")
+
+    # Debt-to-Assets Ratio Insight
+    if 'debtToAssetsRatio' in df and pd.notna(df['debtToAssetsRatio']):
+        if df['debtToAssetsRatio'] > 0.5:
+            insights.append(f"The company's debt-to-assets ratio in {df['fiscalDateEnding']} was {df['debtToAssetsRatio']:.2f}, indicating a higher portion of assets financed by debt.")
+        else:
+            insights.append(f"The debt-to-assets ratio in {df['fiscalDateEnding']} was {df['debtToAssetsRatio']:.2f}, suggesting a lower risk of asset-based debt dependency.")
+
+    # Debt-to-Equity Ratio Insight
+    if 'debtToEquityRatio' in df and pd.notna(df['debtToEquityRatio']):
+        if df['debtToEquityRatio'] > 2:
+            insights.append(f"In {df['fiscalDateEnding']}, the debt-to-equity ratio was {df['debtToEquityRatio']:.2f}, indicating high leverage which may increase financial risk.")
+        elif df['debtToEquityRatio'] > 1 and df['debtToEquityRatio'] <= 2:
+            insights.append(f"In {df['fiscalDateEnding']}, the debt-to-equity ratio was {df['debtToEquityRatio']:.2f}, indicating moderate leverage.")
+        else:
+            insights.append(f"In {df['fiscalDateEnding']}, the debt-to-equity ratio was {df['debtToEquityRatio']:.2f}, indicating low leverage and potentially low risk.")
+
+    # Equity Ratio Insight
+    if 'equityRatio' in df and pd.notna(df['equityRatio']):
+        if df['equityRatio'] > 0.5:
+            insights.append(f"The equity ratio in {df['fiscalDateEnding']} was {df['equityRatio']:.2f}, suggesting that more than half of the company's assets are financed by equity, indicating financial stability.")
+        else:
+            insights.append(f"The equity ratio in {df['fiscalDateEnding']} was {df['equityRatio']:.2f}, which may indicate a higher reliance on debt financing.")
+
+    # Working Capital Insight
+    if 'workingCapital' in df and pd.notna(df['workingCapital']):
+        if df['workingCapital'] < 0:
+            insights.append(f"The company had negative working capital of {df['workingCapital']:.2f} in {df['fiscalDateEnding']}, indicating potential liquidity issues in meeting short-term obligations.")
+        else:
+            insights.append(f"The working capital in {df['fiscalDateEnding']} was {df['workingCapital']:.2f}, indicating the company's ability to cover short-term liabilities.")
+
+    # Net Working Capital Ratio Insight
+    if 'netWorkingCapitalRatio' in df and pd.notna(df['netWorkingCapitalRatio']):
+        if df['netWorkingCapitalRatio'] < 0.1:
+            insights.append(f"The net working capital ratio in {df['fiscalDateEnding']} was {df['netWorkingCapitalRatio']:.2f}, suggesting limited working capital relative to the company's total assets.")
+        else:
+            insights.append(f"The net working capital ratio in {df['fiscalDateEnding']} was {df['netWorkingCapitalRatio']:.2f}, indicating adequate working capital relative to the company's total assets.")
+
+    # Book Value per Share Insight
+    if 'bookValuePerShare' in df and pd.notna(df['bookValuePerShare']):
+        insights.append(f"The book value per share in {df['fiscalDateEnding']} was {df['bookValuePerShare']:.2f}, providing an indication of the per-share equity value available to shareholders.")
+
+    # Join all insights into a single cohesive narrative
+    return " ".join(insights)
 
 
+def generate_bs_yoy_insights(bs_concated):
+    """
+    Generates enhanced financial insights for each row in the balance sheet dataframe by comparing current and previous year's data.
 
+    Parameters
+    ----------
+    bs_concated : pandas.Series
+        A row from the dataframe containing balance sheet data with both current and previous year's columns.
+
+    Returns
+    -------
+    str
+        A single cohesive text containing narrative insights for the given bs_concated.
+    """
+    insights = []
+
+    # Current Ratio Insight
+    if bs_concated['currentRatio_prev'] != 0:
+        current_ratio_change = ((bs_concated['currentRatio'] - bs_concated['currentRatio_prev']) / bs_concated['currentRatio_prev']) * 100
+        insights.append(f"In {bs_concated['fiscalDateEnding']}, the Current Ratio was {bs_concated['currentRatio']:.2f} (previous year: {bs_concated['currentRatio_prev']:.2f}), which changed by {current_ratio_change:.2f}% compared to the previous year.")
+
+    # Quick Ratio Insight
+    if bs_concated['quickRatio_prev'] != 0:
+        quick_ratio_change = ((bs_concated['quickRatio'] - bs_concated['quickRatio_prev']) / bs_concated['quickRatio_prev']) * 100
+        insights.append(f"The Quick Ratio was {bs_concated['quickRatio']:.2f} (previous year: {bs_concated['quickRatio_prev']:.2f}), which changed by {quick_ratio_change:.2f}% compared to the previous year.")
+
+    # Cash Ratio Insight
+    if bs_concated['cashRatio_prev'] != 0:
+        cash_ratio_change = ((bs_concated['cashRatio'] - bs_concated['cashRatio_prev']) / bs_concated['cashRatio_prev']) * 100
+        insights.append(f"The Cash Ratio was {bs_concated['cashRatio']:.2f} (previous year: {bs_concated['cashRatio_prev']:.2f}), which changed by {cash_ratio_change:.2f}% compared to the previous year.")
+
+    # Debt-to-Assets Ratio Insight
+    if bs_concated['debtToAssetsRatio_prev'] != 0:
+        debt_to_assets_change = ((bs_concated['debtToAssetsRatio'] - bs_concated['debtToAssetsRatio_prev']) / bs_concated['debtToAssetsRatio_prev']) * 100
+        insights.append(f"The Debt-to-Assets Ratio was {bs_concated['debtToAssetsRatio']:.2f} (previous year: {bs_concated['debtToAssetsRatio_prev']:.2f}), which changed by {debt_to_assets_change:.2f}% compared to the previous year.")
+
+    # Debt-to-Equity Ratio Insight
+    if bs_concated['debtToEquityRatio_prev'] != 0:
+        debt_to_equity_change = ((bs_concated['debtToEquityRatio'] - bs_concated['debtToEquityRatio_prev']) / bs_concated['debtToEquityRatio_prev']) * 100
+        insights.append(f"The Debt-to-Equity Ratio was {bs_concated['debtToEquityRatio']:.2f} (previous year: {bs_concated['debtToEquityRatio_prev']:.2f}), which changed by {debt_to_equity_change:.2f}% compared to the previous year.")
+
+    # Equity Ratio Insight
+    if bs_concated['equityRatio_prev'] != 0:
+        equity_ratio_change = ((bs_concated['equityRatio'] - bs_concated['equityRatio_prev']) / bs_concated['equityRatio_prev']) * 100
+        insights.append(f"The Equity Ratio was {bs_concated['equityRatio']:.2f} (previous year: {bs_concated['equityRatio_prev']:.2f}), which changed by {equity_ratio_change:.2f}% compared to the previous year.")
+
+    # Working Capital Insight
+    if bs_concated['workingCapital_prev'] != 0:
+        working_capital_change = ((bs_concated['workingCapital'] - bs_concated['workingCapital_prev']) / bs_concated['workingCapital_prev']) * 100
+        insights.append(f"The Working Capital was {bs_concated['workingCapital']:.2f} (previous year: {bs_concated['workingCapital_prev']:.2f}), which changed by {working_capital_change:.2f}% compared to the previous year.")
+
+    # Net Working Capital Ratio Insight
+    if bs_concated['netWorkingCapitalRatio_prev'] != 0:
+        net_working_capital_change = ((bs_concated['netWorkingCapitalRatio'] - bs_concated['netWorkingCapitalRatio_prev']) / bs_concated['netWorkingCapitalRatio_prev']) * 100
+        insights.append(f"The Net Working Capital Ratio was {bs_concated['netWorkingCapitalRatio']:.2f} (previous year: {bs_concated['netWorkingCapitalRatio_prev']:.2f}), which changed by {net_working_capital_change:.2f}% compared to the previous year.")
+
+    # Book Value per Share Insight
+    if bs_concated['bookValuePerShare_prev'] != 0:
+        book_value_change = ((bs_concated['bookValuePerShare'] - bs_concated['bookValuePerShare_prev']) / bs_concated['bookValuePerShare_prev']) * 100
+        insights.append(f"The Book Value per Share was {bs_concated['bookValuePerShare']:.2f} (previous year: {bs_concated['bookValuePerShare_prev']:.2f}), which changed by {book_value_change:.2f}% compared to the previous year.")
+
+    return " ".join(insights)
+
+
+# comparison Kpi with prev year insights in percentage
+
+def year_comparison_bs(bs_year_df):
+    """
+    Compares balance sheet KPIs with the previous year's data and generates narrative insights.
+    
+    Parameters
+    ----------
+    bs_year_df : pandas.Series
+        A series containing balance sheet data for the current year and previous year KPIs.
+    
+    Returns
+    -------
+    str
+        A narrative interpretation highlighting percentage changes in key balance sheet metrics 
+        such as Current Ratio, Quick Ratio, Cash Ratio, Debt-to-Assets Ratio, Debt-to-Equity Ratio, 
+        Equity Ratio, Working Capital, Net Working Capital Ratio, and Book Value per Share.
+    """
+    insights = []
+
+    # Helper function to calculate growth
+    def calculate_growth(current, previous):
+        if pd.notna(previous) and previous != 0:
+            return (current - previous) / previous * 100
+        return None
+
+    # Current Ratio Insight
+    if 'currentRatio' in bs_year_df.index:
+        current_ratio_current = bs_year_df['currentRatio']
+        current_ratio_prev = bs_year_df.get('currentRatio_prev', None)
+        growth = calculate_growth(current_ratio_current, current_ratio_prev)
+        if growth is not None:
+            if growth > 0:
+                insights.append(f"Current Ratio has increased by {growth:.2f}% compared to the previous year, indicating improved short-term liquidity and a better ability to cover short-term obligations.")
+            elif growth < 0:
+                insights.append(f"Current Ratio has decreased by {abs(growth):.2f}% compared to the previous year, suggesting potential challenges in covering short-term liabilities.")
+            else:
+                insights.append(f"Current Ratio has remained stable compared to the previous year, indicating consistent short-term liquidity.")
+
+    # Quick Ratio Insight
+    if 'quickRatio' in bs_year_df.index:
+        quick_ratio_current = bs_year_df['quickRatio']
+        quick_ratio_prev = bs_year_df.get('quickRatio_prev', None)
+        growth = calculate_growth(quick_ratio_current, quick_ratio_prev)
+        if growth is not None:
+            if growth > 0:
+                insights.append(f"Quick Ratio has increased by {growth:.2f}% compared to the previous year, suggesting improved liquidity without relying on inventory.")
+            elif growth < 0:
+                insights.append(f"Quick Ratio has decreased by {abs(growth):.2f}% compared to the previous year, indicating potential difficulties in meeting short-term liabilities without inventory.")
+            else:
+                insights.append(f"Quick Ratio has remained stable compared to the previous year, indicating consistent short-term liquidity without inventory dependency.")
+
+    # Cash Ratio Insight
+    if 'cashRatio' in bs_year_df.index:
+        cash_ratio_current = bs_year_df['cashRatio']
+        cash_ratio_prev = bs_year_df.get('cashRatio_prev', None)
+        growth = calculate_growth(cash_ratio_current, cash_ratio_prev)
+        if growth is not None:
+            if growth > 0:
+                insights.append(f"Cash Ratio has increased by {growth:.2f}% compared to the previous year, highlighting stronger cash reserves to cover short-term liabilities.")
+            elif growth < 0:
+                insights.append(f"Cash Ratio has decreased by {abs(growth):.2f}% compared to the previous year, suggesting reduced cash reserves to meet short-term obligations.")
+            else:
+                insights.append(f"Cash Ratio has remained stable compared to the previous year, indicating consistent cash reserves.")
+
+    # Debt-to-Assets Ratio Insight
+    if 'debtToAssetsRatio' in bs_year_df.index:
+        debt_to_assets_current = bs_year_df['debtToAssetsRatio']
+        debt_to_assets_prev = bs_year_df.get('debtToAssetsRatio_prev', None)
+        growth = calculate_growth(debt_to_assets_current, debt_to_assets_prev)
+        if growth is not None:
+            if growth > 0:
+                insights.append(f"Debt-to-Assets Ratio has increased by {growth:.2f}% compared to the previous year, indicating a higher proportion of assets financed by debt, which may increase financial risk.")
+            elif growth < 0:
+                insights.append(f"Debt-to-Assets Ratio has decreased by {abs(growth):.2f}% compared to the previous year, suggesting a reduced reliance on debt for financing assets.")
+            else:
+                insights.append(f"Debt-to-Assets Ratio has remained stable compared to the previous year, indicating consistent debt financing levels.")
+
+    # Debt-to-Equity Ratio Insight
+    if 'debtToEquityRatio' in bs_year_df.index:
+        debt_to_equity_current = bs_year_df['debtToEquityRatio']
+        debt_to_equity_prev = bs_year_df.get('debtToEquityRatio_prev', None)
+        growth = calculate_growth(debt_to_equity_current, debt_to_equity_prev)
+        if growth is not None:
+            if growth > 0:
+                insights.append(f"Debt-to-Equity Ratio has increased by {growth:.2f}% compared to the previous year, reflecting higher financial leverage and increased risk for shareholders.")
+            elif growth < 0:
+                insights.append(f"Debt-to-Equity Ratio has decreased by {abs(growth):.2f}% compared to the previous year, indicating reduced leverage and potentially lower financial risk.")
+            else:
+                insights.append(f"Debt-to-Equity Ratio has remained stable compared to the previous year, indicating consistent leverage levels.")
+
+    # Equity Ratio Insight
+    if 'equityRatio' in bs_year_df.index:
+        equity_ratio_current = bs_year_df['equityRatio']
+        equity_ratio_prev = bs_year_df.get('equityRatio_prev', None)
+        growth = calculate_growth(equity_ratio_current, equity_ratio_prev)
+        if growth is not None:
+            if growth > 0:
+                insights.append(f"Equity Ratio has increased by {growth:.2f}% compared to the previous year, indicating a greater proportion of assets financed by shareholders' equity, which suggests financial stability.")
+            elif growth < 0:
+                insights.append(f"Equity Ratio has decreased by {abs(growth):.2f}% compared to the previous year, suggesting increased reliance on debt financing.")
+            else:
+                insights.append(f"Equity Ratio has remained stable compared to the previous year, indicating consistent equity financing levels.")
+
+    # Working Capital Insight
+    if 'workingCapital' in bs_year_df.index:
+        working_capital_current = bs_year_df['workingCapital']
+        working_capital_prev = bs_year_df.get('workingCapital_prev', None)
+        growth = calculate_growth(working_capital_current, working_capital_prev)
+        if growth is not None:
+            if growth > 0:
+                insights.append(f"Working Capital has increased by {growth:.2f}% compared to the previous year, showing an improved ability to meet short-term obligations.")
+            elif growth < 0:
+                insights.append(f"Working Capital has decreased by {abs(growth):.2f}% compared to the previous year, indicating potential liquidity issues in meeting short-term obligations.")
+            else:
+                insights.append(f"Working Capital has remained stable compared to the previous year, indicating consistent ability to cover short-term liabilities.")
+
+    # Net Working Capital Ratio Insight
+    if 'netWorkingCapitalRatio' in bs_year_df.index:
+        net_working_capital_current = bs_year_df['netWorkingCapitalRatio']
+        net_working_capital_prev = bs_year_df.get('netWorkingCapitalRatio_prev', None)
+        growth = calculate_growth(net_working_capital_current, net_working_capital_prev)
+        if growth is not None:
+            if growth > 0:
+                insights.append(f"Net Working Capital Ratio has increased by {growth:.2f}% compared to the previous year, providing a better overview of working capital relative to total assets.")
+            elif growth < 0:
+                insights.append(f"Net Working Capital Ratio has decreased by {abs(growth):.2f}% compared to the previous year, suggesting reduced working capital efficiency.")
+            else:
+                insights.append(f"Net Working Capital Ratio has remained stable compared to the previous year, indicating consistent working capital relative to total assets.")
+
+    # Book Value per Share Insight
+    if 'bookValuePerShare' in bs_year_df.index:
+        book_value_current = bs_year_df['bookValuePerShare']
+        book_value_prev = bs_year_df.get('bookValuePerShare_prev', None)
+        growth = calculate_growth(book_value_current, book_value_prev)
+        if growth is not None:
+            if growth > 0:
+                insights.append(f"Book Value per Share has increased by {growth:.2f}% compared to the previous year, indicating a higher per-share equity value available to shareholders.")
+            elif growth < 0:
+                insights.append(f"Book Value per Share has decreased by {abs(growth):.2f}% compared to the previous year, suggesting a decline in per-share equity value.")
+            else:
+                insights.append(f"Book Value per Share has remained stable compared to the previous year, indicating consistent per-share equity value.")
+
+    # Combine all insights into a single narrative string
+    return " ".join(insights)
+
+# Look for Patterns
+def generate_bs_multi_year_insights(dataframe):
+    """
+    Detects financial patterns in multiple balance sheet metrics over multiple years and generates insights as a list of strings.
+
+    Parameters
+    ----------
+    dataframe : pandas.DataFrame
+        A dataframe containing financial data for multiple years with balance sheet KPIs as columns.
+
+    Returns
+    -------
+    list
+        A list of strings providing insights about detected patterns in balance sheet metrics like Current Ratio, Quick Ratio,
+        Cash Ratio, Debt-to-Assets Ratio, Debt-to-Equity Ratio, Equity Ratio, Working Capital, Net Working Capital Ratio,
+        and Book Value per Share.
+    """
+    insights_list = []
+
+    # List of KPIs to analyze
+    kpis = [
+        'totalAssets', 'totalCurrentAssets',
+       'cashAndCashEquivalentsAtCarryingValue', 'cashAndShortTermInvestments',
+       'inventory', 'currentNetReceivables', 'totalNonCurrentAssets',
+       'propertyPlantEquipment', 'accumulatedDepreciationAmortizationPPE',
+       'intangibleAssets', 'intangibleAssetsExcludingGoodwill', 'goodwill',
+       'investments', 'longTermInvestments', 'shortTermInvestments',
+       'otherCurrentAssets', 'otherNonCurrentAssets', 'totalLiabilities',
+       'totalCurrentLiabilities', 'currentAccountsPayable', 'deferredRevenue',
+       'currentDebt', 'shortTermDebt', 'totalNonCurrentLiabilities',
+       'capitalLeaseObligations', 'longTermDebt', 'currentLongTermDebt',
+       'longTermDebtNoncurrent', 'shortLongTermDebtTotal',
+       'otherCurrentLiabilities', 'otherNonCurrentLiabilities',
+       'totalShareholderEquity', 'treasuryStock', 'retainedEarnings',
+       'commonStock', 'commonStockSharesOutstanding', 'currentRatio',
+       'quickRatio', 'cashRatio', 'debtToAssetsRatio', 'debtToEquityRatio',
+       'equityRatio', 'workingCapital', 'netWorkingCapitalRatio',
+       'bookValuePerShare'
+       ]
+
+    for index, row in dataframe.iterrows():
+        if index + 2 < len(dataframe):
+            current_year = row['fiscalDateEnding']
+            insights = []
+
+            for kpi in kpis:
+                current_value = row[kpi]
+                next_value = dataframe.iloc[index + 1][kpi]
+                next_next_value = dataframe.iloc[index + 2][kpi]
+
+                # Analyze trends for each KPI across three years
+                if current_value > next_value and next_value > next_next_value:
+                    insights.append(f"The {kpi.replace('_', ' ')} has grown consistently over the past three years ending in {current_year}.")
+                elif current_value < next_value and next_value < next_next_value:
+                    insights.append(f"The {kpi.replace('_', ' ')} has declined consistently over the past three years ending in {current_year}.")
+                elif current_value == next_value and next_value == next_next_value:
+                    insights.append(f"The {kpi.replace('_', ' ')} has remained stable over the past three years ending in {current_year}.")
+                else:
+                    insights.append(f"The {kpi.replace('_', ' ')} has shown fluctuations over the past three years ending in {current_year}.")
+
+            # Combine the insights for the current row into a single string
+            insights_list.append(' '.join(insights))
+        else:
+            insights_list.append('Insufficient data for trend analysis over three years.')
+
+    return insights_list
