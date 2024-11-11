@@ -485,6 +485,8 @@ def generate_cf_yoy_insights(df):
     # Join all year-over-year insights into a single narrative text
     return " ".join(yoy_insights)
 
+
+# Function to detect patterns in cash flow
 def year_comparison_cf(pattern_df_cf):
     """
     Detects financial patterns in cash flow metrics over multiple years and generates insights as a single string.
@@ -629,3 +631,69 @@ def generate_insights_cf_multi_year(dataframe):
             insights_list.append('Insufficient data for trend analysis over three years.')
 
     return insights_list
+
+# balance sheet functions
+
+def calculate_kpi_bs(bs_dataframe):
+    """
+    Calculate key financial metrics from the balance sheet data.
+
+    Parameters
+    ----------
+    bs_dataframe : pandas.DataFrame
+        DataFrame containing balance sheet data for multiple years.
+
+    Returns
+    -------
+    bs_dataframe : pandas.DataFrame
+        The updated DataFrame with new columns for the calculated KPIs.
+    """
+    # Calculate Current Ratio
+    if 'totalCurrentAssets' in bs_dataframe.columns and 'totalCurrentLiabilities' in bs_dataframe.columns:
+        bs_dataframe['currentRatio'] = bs_dataframe['totalCurrentAssets'] / bs_dataframe['totalCurrentLiabilities']
+
+    # Calculate Quick Ratio
+    if 'totalCurrentAssets' in bs_dataframe.columns and 'inventory' in bs_dataframe.columns and 'totalCurrentLiabilities' in bs_dataframe.columns:
+        bs_dataframe['quickRatio'] = (bs_dataframe['totalCurrentAssets'] - bs_dataframe['inventory']) / bs_dataframe['totalCurrentLiabilities']
+
+    # Calculate Cash Ratio
+    if 'cashAndCashEquivalentsAtCarryingValue' in bs_dataframe.columns and 'totalCurrentLiabilities' in bs_dataframe.columns:
+        bs_dataframe['cashRatio'] = bs_dataframe['cashAndCashEquivalentsAtCarryingValue'] / bs_dataframe['totalCurrentLiabilities']
+
+    # Calculate Debt-to-Assets Ratio
+    if 'totalLiabilities' in bs_dataframe.columns and 'totalAssets' in bs_dataframe.columns:
+        bs_dataframe['debtToAssetsRatio'] = bs_dataframe['totalLiabilities'] / bs_dataframe['totalAssets']
+
+    # Calculate Debt-to-Equity Ratio
+    if 'totalLiabilities' in bs_dataframe.columns and 'totalShareholderEquity' in bs_dataframe.columns:
+        bs_dataframe['debtToEquityRatio'] = bs_dataframe['totalLiabilities'] / bs_dataframe['totalShareholderEquity']
+
+    # Calculate Equity Ratio
+    if 'totalShareholderEquity' in bs_dataframe.columns and 'totalAssets' in bs_dataframe.columns:
+        bs_dataframe['equityRatio'] = bs_dataframe['totalShareholderEquity'] / bs_dataframe['totalAssets']
+
+    # Calculate Working Capital
+    if 'totalCurrentAssets' in bs_dataframe.columns and 'totalCurrentLiabilities' in bs_dataframe.columns:
+        bs_dataframe['workingCapital'] = bs_dataframe['totalCurrentAssets'] - bs_dataframe['totalCurrentLiabilities']
+
+    # Calculate Net Working Capital Ratio
+    if 'workingCapital' in bs_dataframe.columns and 'totalAssets' in bs_dataframe.columns:
+        bs_dataframe['netWorkingCapitalRatio'] = bs_dataframe['workingCapital'] / bs_dataframe['totalAssets']
+
+    # Calculate Book Value per Share (assuming 'numberOfSharesOutstanding' column exists)
+    if 'totalShareholderEquity' in bs_dataframe.columns and 'numberOfSharesOutstanding' in bs_dataframe.columns:
+        bs_dataframe['bookValuePerShare'] = bs_dataframe['totalShareholderEquity'] / bs_dataframe['numberOfSharesOutstanding']
+
+    # Calculate Debt Coverage Ratio (assuming 'operatingIncome' column exists)
+    if 'operatingIncome' in bs_dataframe.columns and 'totalLiabilities' in bs_dataframe.columns:
+        bs_dataframe['debtCoverageRatio'] = bs_dataframe['operatingIncome'] / bs_dataframe['totalLiabilities']
+
+    # Calculate Interest Coverage Ratio (assuming 'operatingIncome' and 'interestExpense' columns exist)
+    if 'operatingIncome' in bs_dataframe.columns and 'interestExpense' in bs_dataframe.columns:
+        bs_dataframe['interestCoverageRatio'] = bs_dataframe['operatingIncome'] / bs_dataframe['interestExpense']
+
+    return bs_dataframe
+
+
+
+
