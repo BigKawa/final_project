@@ -1,4 +1,4 @@
 
 import streamlit as st
 
-st.write("Hello, world!")
+st.title("📊 Automated Financial Report Analysis Tool")
