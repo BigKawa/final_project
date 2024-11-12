@@ -1,5 +1,5 @@
 import pandas as pd
-
+import numpy as np
 
 # General functions for all dataframes
 
@@ -34,7 +34,7 @@ def cleaning(dataframe):
     return dataframe
 
 
-def create_prev_year(df_current_year):    
+def create_prev_year_old (df_current_year):    
     """
     Creates a new dataframe df_prev with data from the previous year.
 
@@ -57,6 +57,40 @@ def create_prev_year(df_current_year):
     
     return df_prev
 
+
+def create_prev_year(df_current_year):    
+    """
+    Creates a new dataframe df_prev with data from the previous year.
+
+    Parameters
+    ----------
+    df_current_year : pandas.DataFrame
+        A dataframe containing the current year's data for the company.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The newly created dataframe with data from the previous year.
+    """
+    
+    # Create a new dataframe with previous year data
+    df_prev = df_current_year.set_index("fiscalDateEnding").shift(-1)
+
+    # Fill NaN values with 0
+    df_prev.fillna(0, inplace=True)
+
+    # Replace infinite values with 0 for numeric columns only
+    numeric_cols = df_prev.select_dtypes(include=[np.number])
+    df_prev[numeric_cols.columns] = numeric_cols.applymap(lambda x: 0 if not np.isfinite(x) else x) # Replace infinite values with 0
+
+    # Convert numeric columns to integer type
+    df_prev[numeric_cols.columns] = df_prev[numeric_cols.columns].astype('int64')
+
+    # Reset the index and rename columns to indicate previous year data
+    df_prev.reset_index(drop=True, inplace=True)
+    df_prev.columns = [f"{col}_prev" for col in df_prev.columns]
+    
+    return df_prev
 
 # pnl functions
 def generate_automated_insights(df):
