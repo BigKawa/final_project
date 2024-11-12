@@ -1069,3 +1069,5 @@ def generate_bs_multi_year_insights(dataframe):
             insights_list.append('Insufficient data for trend analysis over three years.')
 
     return insights_list
+
+

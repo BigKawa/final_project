@@ -67,4 +67,3 @@ def extract_financial_Data(input_symbol):
     return bs_annual, pnl_annual, cf_annual
 
 
-

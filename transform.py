@@ -72,4 +72,6 @@ cf_concat["patterns"] = f.generate_insights_cf_multi_year(cf_concat)
 # Generate insights for each row in the DataFrame balance sheet
 bs_concat["patterns"] = f.generate_bs_multi_year_insights(bs_concat)
 
-p
+print(bs_concat)
+print(cf_concat)
+print(pnl_concat)
