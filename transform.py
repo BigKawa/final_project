@@ -7,15 +7,14 @@ import os
 # Windows path
 # os.chdir('C:\\Users\\Nutzer\\GitHub\\Ironhack\\Groupwork\\final_project')
 
+
 # checking working directory
 print("Current Working Directory:", os.getcwd())
 os.chdir('C:\\Users\\Nutzer\\GitHub\\Ironhack\\Groupwork\\final_project')
 print("Current Working Directory:", os.getcwd())
 
-# input_symbol = "MSFT" # Test Input in this case Apple
 
-
-# Brauch ich das ? 
+# Initialize financial data
 def initialize_financial_data(input_symbol):
     """
     Extracts and initializes financial data for the given input symbol.
