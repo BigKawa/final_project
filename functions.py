@@ -307,7 +307,6 @@ def calculating_kpi_pnl(pnl_dataframe):
     
 
 # cashflow functions
-
 def calculate_kpi_cf(cf_dataframe, revenue_series=None):
     """
     Calculates key performance indicators (KPIs) for a given cash flow dataframe.
@@ -324,30 +323,49 @@ def calculate_kpi_cf(cf_dataframe, revenue_series=None):
     pandas.DataFrame
         The dataframe with new columns for key cash flow metrics.
     """
-    
+
+    # Ensure that cf_dataframe is a copy to avoid SettingWithCopyWarning
+    cf_dataframe = cf_dataframe.copy()
+
     # Calculate Free Cash Flow (FCF)
-    cf_dataframe['freeCashFlow'] = cf_dataframe['operatingCashflow'] - cf_dataframe['capitalExpenditures']
-    
+    if 'operatingCashflow' in cf_dataframe.columns and 'capitalExpenditures' in cf_dataframe.columns:
+        cf_dataframe = cf_dataframe.assign(
+            freeCashFlow=cf_dataframe['operatingCashflow'] - cf_dataframe['capitalExpenditures']
+        )
+
     # Calculate Capital Expenditure Ratio (Operating Cash Flow / Capital Expenditures)
-    cf_dataframe['capitalExpenditureRatio'] = cf_dataframe['operatingCashflow'] / cf_dataframe['capitalExpenditures']
-    
+    if 'operatingCashflow' in cf_dataframe.columns and 'capitalExpenditures' in cf_dataframe.columns:
+        cf_dataframe = cf_dataframe.assign(
+            capitalExpenditureRatio=cf_dataframe['operatingCashflow'] / cf_dataframe['capitalExpenditures']
+        )
+
     # Calculate Operating Cash Flow Growth
     # Reverse the DataFrame to ensure ascending order for pct_change calculation
-    cf_dataframe_reversed = cf_dataframe.iloc[::-1].copy()
-    cf_dataframe_reversed['operatingCashFlowGrowth'] = cf_dataframe_reversed['operatingCashflow'].pct_change() * 100
-    cf_dataframe = cf_dataframe_reversed.iloc[::-1]  # Reverse back to original order
-    
+    if 'operatingCashflow' in cf_dataframe.columns:
+        cf_dataframe_reversed = cf_dataframe.iloc[::-1].copy()
+        cf_dataframe_reversed = cf_dataframe_reversed.assign(
+            operatingCashFlowGrowth=cf_dataframe_reversed['operatingCashflow'].pct_change() * 100
+        )
+        cf_dataframe = cf_dataframe_reversed.iloc[::-1].copy()  # Reverse back to original order
+
     # Calculate Dividend Payout Ratio from Cash Flow
-    if 'dividendPayoutCommonStock' in cf_dataframe.columns:
-        cf_dataframe['dividendPayoutRatio'] = cf_dataframe['dividendPayoutCommonStock'] / cf_dataframe['operatingCashflow']
-    
+    if 'dividendPayoutCommonStock' in cf_dataframe.columns and 'operatingCashflow' in cf_dataframe.columns:
+        cf_dataframe = cf_dataframe.assign(
+            dividendPayoutRatio=cf_dataframe['dividendPayoutCommonStock'] / cf_dataframe['operatingCashflow']
+        )
+
     # Calculate Cash Flow Margin if revenue data is provided
-    if revenue_series is not None:
-        cf_dataframe['cashFlowMargin'] = (cf_dataframe['operatingCashflow'] / revenue_series) * 100
-    
+    if revenue_series is not None and 'operatingCashflow' in cf_dataframe.columns:
+        cf_dataframe = cf_dataframe.assign(
+            cashFlowMargin=(cf_dataframe['operatingCashflow'] / revenue_series) * 100
+        )
+
     # Calculate Reinvestment Ratio
-    cf_dataframe['reinvestmentRatio'] = cf_dataframe['capitalExpenditures'] / cf_dataframe['operatingCashflow']
-    
+    if 'capitalExpenditures' in cf_dataframe.columns and 'operatingCashflow' in cf_dataframe.columns:
+        cf_dataframe = cf_dataframe.assign(
+            reinvestmentRatio=cf_dataframe['capitalExpenditures'] / cf_dataframe['operatingCashflow']
+        )
+
     return cf_dataframe
 
 
@@ -414,7 +432,6 @@ def generate_cashflow_insights(df):
 
     # Join all insights into a single narrative text
     return " ".join(insights)
-
 
 
 def generate_cf_yoy_insights(df):
