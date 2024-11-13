@@ -161,6 +161,25 @@ if st.session_state['financial_data_loaded']:
         )
         st.plotly_chart(fig_total_assets_vs_liabilities)
 
+        # Plotting Debt Composition (current vs. non-current liabilities)
+        fig_debt_composition = px.bar(
+            filtered_bs_data,
+            x='fiscalDateEnding',
+            y=['totalCurrentLiabilities', 'totalNonCurrentLiabilities'],
+            title='Debt Composition Over Time (Current vs. Non-Current Liabilities)',
+            barmode='stack'
+        )
+        st.plotly_chart(fig_debt_composition)
+
+        # Plotting Shareholder Equity vs. Debt-to-Equity Ratio
+        fig_equity_vs_debt_ratio = px.line(
+            filtered_bs_data,
+            x='fiscalDateEnding',
+            y=['totalShareholderEquity', 'debtToEquityRatio'],
+            title='Shareholder Equity vs. Debt-to-Equity Ratio Over Time'
+        )
+        st.plotly_chart(fig_equity_vs_debt_ratio)
+
         # Generate Insights for Balance Sheet
         if st.button("💡 Generate Balance Sheet Insights", key="bs_insights_button"):
             st.session_state['bs_insights_generated'] = True
@@ -201,6 +220,25 @@ if st.session_state['financial_data_loaded']:
             title='Operating Income vs. Net Income Over Time'
         )
         st.plotly_chart(fig_operating_vs_net_income)
+
+        # Plotting Cost of Goods Sold vs. Total Revenue
+        fig_cogs_vs_revenue = px.line(
+            filtered_pnl_data,
+            x='fiscalDateEnding',
+            y=['totalRevenue', 'costOfRevenue'],
+            title='Cost of Goods Sold vs. Total Revenue Over Time'
+        )
+        st.plotly_chart(fig_cogs_vs_revenue)
+
+        # Plotting R&D and SG&A Expenses
+        fig_rd_vs_sga = px.bar(
+            filtered_pnl_data,
+            x='fiscalDateEnding',
+            y=['researchAndDevelopment', 'sellingGeneralAndAdministrative'],
+            title='R&D vs. SG&A Expenses Over Time',
+            barmode='stack'
+        )
+        st.plotly_chart(fig_rd_vs_sga)
 
         # Generate Insights for Profit & Loss
         if st.button("💡 Generate P&L Insights", key="pnl_insights_button"):
