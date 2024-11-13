@@ -31,7 +31,7 @@ if 'insights_generated' not in st.session_state:
 if st.button("Get Financial Data"):
     try:
         # Ideally, replace this with the actual function to fetch data via an API call
-        # Example: bs_annual, pnl_annual, cf_annual = t.transform_pipeline(company_symbol)
+        # Example: pnl_concat, bs_concat, cf_concat = t.transform_pipeline(company_symbol)
 
         # Testing with CSV data as placeholder for now
         bs_annual = pd.read_csv("Data/bs_annual_MSFT.csv")
@@ -44,6 +44,7 @@ if st.button("Get Financial Data"):
         pnl_annual_prev, bs_annual_prev, cf_annual_prev = t.create_previous_year_dataframes(bs_annual, pnl_annual, cf_annual)
         pnl_concat, bs_concat, cf_concat = t.concatenate_dataframes(bs_annual, pnl_annual, cf_annual, bs_annual_prev, pnl_annual_prev, cf_annual_prev)
         pnl_concat, bs_concat, cf_concat = t.generate_insights(pnl_concat, bs_concat, cf_concat)
+
 
         # Ensure insights columns are strings to avoid serialization issues
         pnl_concat['insights_prev'] = pnl_concat['insights_prev'].astype(str)
@@ -91,6 +92,7 @@ if st.session_state['insights_generated'] and st.session_state['selected_year']:
     bs_year_data = st.session_state['bs_concat'][st.session_state['bs_concat']['fiscalDateEnding'] == st.session_state['selected_year']]
     pnl_year_data = st.session_state['pnl_concat'][st.session_state['pnl_concat']['fiscalDateEnding'] == st.session_state['selected_year']]
     cf_year_data = st.session_state['cf_concat'][st.session_state['cf_concat']['fiscalDateEnding'] == st.session_state['selected_year']]
+
 
     # Displaying Balance Sheet Insights
     if not bs_year_data.empty:
