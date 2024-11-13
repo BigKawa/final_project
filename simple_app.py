@@ -88,35 +88,14 @@ with tabs[0]:
         st.metric("Total Assets", f"${total_assets:,}")
         st.metric("Total Liabilities", f"${total_liabilities:,}")
         st.metric("Net Income", f"${net_income:,}")
+
 # Balance Sheet Tab
 with tabs[1]:
     st.header("🧾 Balance Sheet Analysis")
     if st.session_state['financial_data_loaded']:
         st.write("Below is the balance sheet overview:")
         st.dataframe(st.session_state['bs_concat'])
-
-        # Dropdown for Year Selection within the Balance Sheet Tab
-        available_years = st.session_state['bs_concat']['fiscalDateEnding'].unique()
-        selected_year_bs = st.selectbox("📅 Select a Year to View Balance Sheet Insights:", available_years, key="year_select_bs")
-
-        # Button to generate insights for the selected year
-        if st.button("💡 Generate Balance Sheet Insights"):
-            with st.spinner('🔍 Generating Balance Sheet insights... Please wait while we analyze the data for you.'):
-                # Filter the balance sheet data for the selected year
-                bs_year_data = st.session_state['bs_concat'][st.session_state['bs_concat']['fiscalDateEnding'] == selected_year_bs]
-                
-                if not bs_year_data.empty:
-                    st.subheader(f"**📊 Balance Sheet Insights for the Year {selected_year_bs}**")
-                    if 'insights' in bs_year_data.columns:
-                        st.markdown(f"**Balance Sheet Insights**: {bs_year_data['insights'].values[0]}")
-                    if 'previous_year_insights' in bs_year_data.columns:
-                        st.markdown(f"**Previous Year Insights**: {bs_year_data['previous_year_insights'].values[0]}")
-                    if 'year_comparison_insight' in bs_year_data.columns:
-                        st.markdown(f"**Year Comparison Insight**: {bs_year_data['year_comparison_insight'].values[0]}")
-                    if 'patterns' in bs_year_data.columns:
-                        st.markdown(f"**Patterns Identified**: {bs_year_data['patterns'].values[0]}")
-                else:
-                    st.warning("No insights available for the Balance Sheet for the selected year. Please try another year.")
+        # Add visualizations for balance sheet metrics here
 
 # Profit & Loss Tab
 with tabs[2]:
@@ -124,29 +103,7 @@ with tabs[2]:
     if st.session_state['financial_data_loaded']:
         st.write("Below is the profit and loss statement overview:")
         st.dataframe(st.session_state['pnl_concat'])
-
-        # Dropdown for Year Selection within the Profit & Loss Tab
-        available_years = st.session_state['pnl_concat']['fiscalDateEnding'].unique()
-        selected_year_pnl = st.selectbox("📅 Select a Year to View P&L Insights:", available_years, key="year_select_pnl")
-
-        # Button to generate insights for the selected year
-        if st.button("💡 Generate P&L Insights"):
-            with st.spinner('🔍 Generating P&L insights... Please wait while we analyze the data for you.'):
-                # Filter the P&L data for the selected year
-                pnl_year_data = st.session_state['pnl_concat'][st.session_state['pnl_concat']['fiscalDateEnding'] == selected_year_pnl]
-                
-                if not pnl_year_data.empty:
-                    st.subheader(f"**📊 Profit & Loss Insights for the Year {selected_year_pnl}**")
-                    if 'insights' in pnl_year_data.columns:
-                        st.markdown(f"**Profit & Loss Current Insights**: {pnl_year_data['insights'].values[0]}")
-                    if 'previous_year_insights' in pnl_year_data.columns:
-                        st.markdown(f"**Previous Year Insights**: {pnl_year_data['previous_year_insights'].values[0]}")
-                    if 'year_comparison_insight' in pnl_year_data.columns:
-                        st.markdown(f"**Year Comparison Insight**: {pnl_year_data['year_comparison_insight'].values[0]}")
-                    if 'patterns' in pnl_year_data.columns:
-                        st.markdown(f"**Patterns Identified**: {pnl_year_data['patterns'].values[0]}")
-                else:
-                    st.warning("No insights available for the Profit and Loss Statement for the selected year.")
+        # Add visualizations for revenue, expenses, and profit
 
 # Cash Flow Tab
 with tabs[3]:
@@ -154,30 +111,7 @@ with tabs[3]:
     if st.session_state['financial_data_loaded']:
         st.write("Below is the cash flow statement overview:")
         st.dataframe(st.session_state['cf_concat'])
-
-        # Dropdown for Year Selection within the Cash Flow Tab
-        available_years = st.session_state['cf_concat']['fiscalDateEnding'].unique()
-        selected_year_cf = st.selectbox("📅 Select a Year to View Cash Flow Insights:", available_years, key="year_select_cf")
-
-        # Button to generate insights for the selected year
-        if st.button("💡 Generate Cash Flow Insights"):
-            with st.spinner('🔍 Generating Cash Flow insights... Please wait while we analyze the data for you.'):
-                # Filter the cash flow data for the selected year
-                cf_year_data = st.session_state['cf_concat'][st.session_state['cf_concat']['fiscalDateEnding'] == selected_year_cf]
-                
-                if not cf_year_data.empty:
-                    st.subheader(f"**📊 Cash Flow Insights for the Year {selected_year_cf}**")
-                    if 'insights' in cf_year_data.columns:
-                        st.markdown(f"**Cash Flow Current Insights**: {cf_year_data['insights'].values[0]}")
-                    if 'previous_year_insights' in cf_year_data.columns:
-                        st.markdown(f"**Previous Year Insights**: {cf_year_data['previous_year_insights'].values[0]}")
-                    if 'year_comparison_insight' in cf_year_data.columns:
-                        st.markdown(f"**Year Comparison Insight**: {cf_year_data['year_comparison_insight'].values[0]}")
-                    if 'patterns' in cf_year_data.columns:
-                        st.markdown(f"**Patterns Identified**: {cf_year_data['patterns'].values[0]}")
-                else:
-                    st.warning("No insights available for the Cash Flow Statement for the selected year.")
-
+        # Add visualizations for cash flows
 
 # Trends & Comparisons Tab
 with tabs[4]:
