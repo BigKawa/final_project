@@ -4,6 +4,15 @@ import numpy as np
 import functions as py  # Import the functions module
 import transform as t
 
+# This will be the input of the streamlit app User
+# st input 
+# bs_annual, pnl_annual, cf_annual = t.transform_pipeline(st_input)
+import streamlit as st
+import pandas as pd
+import numpy as np
+import functions as py  # Import the functions module
+import transform as t
+
 # Streamlit App
 st.title("📊 Automated Financial Report Analysis Tool")
 st.caption("Analyze the financial report of a company using Streamlit and Python.")
@@ -96,12 +105,12 @@ if st.session_state['insights_generated'] and st.session_state['selected_year']:
     if not bs_year_data.empty:
         st.subheader("Balance Sheet Insights") 
         
-        if 'insights' in bs_year_data.columns:
+        if 'insights_prev' in bs_year_data.columns:
             st.markdown(f"**Balance Sheet Insights**: {bs_year_data['insights'].values[0]}")
+        if 'insights' in bs_year_data.columns:
+            st.markdown(f"**Balance Sheet Current Insights**: {bs_year_data['insights_prev'].values[0]}")
         if 'previous_year_insights' in bs_year_data.columns:
             st.markdown(f"**Previous Year Insights**: {bs_year_data['previous_year_insights'].values[0]}")
-        if 'year_comparison_insight' in bs_year_data.columns:
-            st.markdown(f"**Year Comparison Insight**: {bs_year_data['year_comparison_insight'].values[0]}")
         if 'patterns' in bs_year_data.columns:
             st.markdown(f"**Patterns**: {bs_year_data['patterns'].values[0]}")
     else:
@@ -109,13 +118,12 @@ if st.session_state['insights_generated'] and st.session_state['selected_year']:
 
     # Displaying Profit and Loss Insights
     if not pnl_year_data.empty:
-        st.subheader("Profit and Loss Insights") 
+        if 'insights_prev' in pnl_year_data.columns:
+            st.markdown(f"**Profit and Loss Insights**: {pnl_year_data['insights_prev'].values[0]}")
         if 'insights' in pnl_year_data.columns:
             st.markdown(f"**Profit and Loss Current Insights**: {pnl_year_data['insights'].values[0]}")
         if 'previous_year_insights' in pnl_year_data.columns:
             st.markdown(f"**Previous Year Insights**: {pnl_year_data['previous_year_insights'].values[0]}")
-        if 'year_comparison_insight' in pnl_year_data.columns:
-            st.markdown(f"**Year Comparison Insight**: {pnl_year_data['year_comparison_insight'].values[0]}")
         if 'patterns' in pnl_year_data.columns:
             st.markdown(f"**Patterns**: {pnl_year_data['patterns'].values[0]}")
     else:
@@ -123,14 +131,27 @@ if st.session_state['insights_generated'] and st.session_state['selected_year']:
 
     # Displaying Cash Flow Insights
     if not cf_year_data.empty:
-        st.subheader("Cashflow Insights") 
+        if 'insights_prev' in cf_year_data.columns:
+            st.markdown(f"**Cash Flow Insights**: {cf_year_data['insights_prev'].values[0]}")
         if 'insights' in cf_year_data.columns:
             st.markdown(f"**Cash Flow Current Insights**: {cf_year_data['insights'].values[0]}")
         if 'previous_year_insights' in cf_year_data.columns:
             st.markdown(f"**Previous Year Insights**: {cf_year_data['previous_year_insights'].values[0]}")
-        if 'year_comparison_insight' in cf_year_data.columns:
-            st.markdown(f"**Year Comparison Insight**: {cf_year_data['year_comparison_insight'].values[0]}")
         if 'patterns' in cf_year_data.columns:
             st.markdown(f"**Patterns**: {cf_year_data['patterns'].values[0]}")
     else:
         st.warning("No insights available for the Cash Flow Statement for the selected year.")
+
+    # Generate insights for each section separately
+    if 'insights_balance_sheet' in bs_year_data.columns:
+        st.subheader("**Detailed Balance Sheet Insights**")
+        st.markdown(bs_year_data['insights_balance_sheet'].values[0])
+
+    if 'insights_pnl' in pnl_year_data.columns:
+        st.subheader("**Detailed Profit and Loss Insights**")
+        st.markdown(pnl_year_data['insights_pnl'].values[0])
+
+    if 'insights_cash_flow' in cf_year_data.columns:
+        st.subheader("**Detailed Cash Flow Insights**")
+        st.markdown(cf_year_data['insights_cash_flow'].values[0])
+
