@@ -5,12 +5,12 @@ import data_extraction_file as data
 import os
 
 # Windows path
-# os.chdir('C:\\Users\\Nutzer\\GitHub\\Ironhack\\Groupwork\\final_project')
+os.chdir('C:\\Users\\Nutzer\\GitHub\\Ironhack\\Groupwork\\final_project')
 
 
 # checking working directory
 print("Current Working Directory:", os.getcwd())
-os.chdir('C:\\Users\\Nutzer\\GitHub\\Ironhack\\Groupwork\\final_project')
+# os.chdir('C:\\Users\\Nutzer\\GitHub\\Ironhack\\Groupwork\\final_project')
 print("Current Working Directory:", os.getcwd())
 
 
