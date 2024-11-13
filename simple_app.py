@@ -122,10 +122,10 @@ if st.session_state['financial_data_loaded']:
     with tabs[0]:
         st.header("📊 Overview of Financial Metrics")
         if not filtered_bs_data.empty and not filtered_pnl_data.empty and not filtered_cf_data.empty:
-            latest_year = filtered_bs_data['fiscalDateEnding'].iloc[-1]
-            st.metric(label=f"Total Assets (as of {latest_year})", value=f"${filtered_bs_data['totalAssets'].iloc[-1]:,.2f}")
-            st.metric(label="Net Income", value=f"${filtered_pnl_data['netIncome'].iloc[-1]:,.2f}")
-            st.metric(label="Operating Cash Flow", value=f"${filtered_cf_data['operatingCashflow'].iloc[-1]:,.2f}")
+            latest_year = filtered_bs_data['fiscalDateEnding'].iloc[0]
+            st.metric(label=f"Total Assets (as of {latest_year})", value=f"${filtered_bs_data['totalAssets'].iloc[0]:,.2f}")
+            st.metric(label="Net Income", value=f"${filtered_pnl_data['netIncome'].iloc[0]:,.2f}")
+            st.metric(label="Operating Cash Flow", value=f"${filtered_cf_data['operatingCashflow'].iloc[0]:,.2f}")
             
             # Plotting total assets over selected year range
             fig_assets = px.line(filtered_bs_data, x='fiscalDateEnding', y='totalAssets', title='Total Assets Over Time')
