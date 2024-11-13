@@ -1,14 +1,15 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.express as px
 import functions as py  # Import the functions module
 import transform as t
 
-# Set Streamlit page configuration (NEW)
+# Set Streamlit page configuration
 st.set_page_config(page_title="Automated Financial Report Analysis Tool", page_icon="📊", layout="wide")
 
-# Sidebar Content - Helpful Links and Contact Information (NEW)
-st.sidebar.header("📚 Resources")
+# Sidebar Content - Helpful Links and Contact Information
+st.sidebar.header("📜 Resources")
 st.sidebar.markdown("[Alpha Vantage API Documentation](https://www.alphavantage.co/documentation/)")
 st.sidebar.markdown("[Streamlit Documentation](https://docs.streamlit.io/)")
 st.sidebar.header("📞 Contact Us")
@@ -41,10 +42,7 @@ if 'insights_generated' not in st.session_state:
 # Button to trigger data retrieval and processing
 if st.button("💼 Get Financial Data"):
     try:
-        # Ideally, replace this with the actual function to fetch data via an API call
-        # Example: pnl_concat, bs_concat, cf_concat = t.transform_pipeline(company_symbol)
-
-        # Testing with CSV data as placeholder for now
+        # Load the data (testing with CSV data as placeholder for now)
         bs_annual = pd.read_csv("Data/bs_annual_MSFT.csv")
         cf_annual = pd.read_csv("Data/cf_annual_MSFT.csv")
         pnl_annual = pd.read_csv("Data/pnl_annual_MSFT.csv")
@@ -66,7 +64,7 @@ if st.button("💼 Get Financial Data"):
         st.session_state['bs_concat'] = bs_concat
         st.session_state['cf_concat'] = cf_concat
         st.session_state['financial_data_loaded'] = True
-        st.session_state['insights_generated'] = False  # Reset insights status
+        st.session_state['insights_generated'] = False
 
         st.success("🎉 Financial data successfully loaded! Navigate through the tabs to explore more.")
 
@@ -74,28 +72,56 @@ if st.button("💼 Get Financial Data"):
         st.error(f"An error occurred while retrieving or processing the data: {e}")
 
 # Create Tabs to Organize the Analysis
-tabs = st.tabs(["🏠 Overview", "🧾 Balance Sheet", "💸 Profit & Loss", "💰 Cash Flow", "📊 Trends & Comparisons"])
+tabs = st.tabs(["🏠 Overview", "📜 Balance Sheet", "💸 Profit & Loss", "💰 Cash Flow", "📊 Trends & Comparisons"])
 
 # Overview Tab
 with tabs[0]:
     st.header("🏠 Overview")
+    
     if st.session_state['financial_data_loaded']:
-        st.write("Key KPIs and Metrics Overview")
-        # Add a few key metrics for a quick overview
-        total_assets = st.session_state['bs_concat']['totalAssets'].iloc[-1]
-        total_liabilities = st.session_state['bs_concat']['totalLiabilities'].iloc[-1]
-        net_income = st.session_state['pnl_concat']['netIncome'].iloc[-1]
-        st.metric("Total Assets", f"${total_assets:,}")
-        st.metric("Total Liabilities", f"${total_liabilities:,}")
-        st.metric("Net Income", f"${net_income:,}")
+        # Display key metrics using metric cards
+        if 'totalAssets' in st.session_state['bs_concat'].columns:
+            total_assets = st.session_state['bs_concat']['totalAssets'].iloc[-1]
+            st.metric(label="Total Assets", value=f"${total_assets:,.2f}")
+        else:
+            st.warning("Total Assets data is not available.")
+
+        if 'netIncome' in st.session_state['pnl_concat'].columns:
+            net_income = st.session_state['pnl_concat']['netIncome'].iloc[-1]
+            st.metric(label="Net Income", value=f"${net_income:,.2f}")
+        else:
+            st.warning("Net Income data is not available.")
+        
+        if 'operatingCashflow' in st.session_state['cf_concat'].columns:
+            operating_cash_flow = st.session_state['cf_concat']['operatingCashflow'].iloc[-1]
+            st.metric(label="Operating Cash Flow", value=f"${operating_cash_flow:,.2f}")
+        else:
+            st.warning("Operating Cash Flow data is not available.")
+
+        # Plotly Line Chart for Revenue Growth
+        if 'totalRevenue' in st.session_state['pnl_concat'].columns:
+            st.subheader("📈 Revenue Growth Over Time")
+            filtered_data = st.session_state['pnl_concat']
+            fig = px.line(filtered_data, x='fiscalDateEnding', y='totalRevenue', title='Total Revenue Over Time')
+            st.plotly_chart(fig)
+        else:
+            st.warning("Total Revenue data is not available for plotting.")
 
 # Balance Sheet Tab
 with tabs[1]:
-    st.header("🧾 Balance Sheet Analysis")
+    st.header("📜 Balance Sheet Analysis")
     if st.session_state['financial_data_loaded']:
         st.write("Below is the balance sheet overview:")
         st.dataframe(st.session_state['bs_concat'])
-        # Add visualizations for balance sheet metrics here
+
+        # Dropdown for Year Selection within the Balance Sheet Tab
+        available_years = st.session_state['bs_concat']['fiscalDateEnding'].unique()
+        selected_year_bs = st.selectbox("📅 Select a Year to View Balance Sheet Insights:", available_years, key="year_select_bs")
+
+        # Plotly Bar Chart for Total Assets vs. Total Liabilities
+        filtered_data = st.session_state['bs_concat'][st.session_state['bs_concat']['fiscalDateEnding'] == selected_year_bs]
+        fig = px.bar(filtered_data, x='fiscalDateEnding', y=['totalAssets', 'totalLiabilities'], barmode='group', title='Total Assets vs. Total Liabilities')
+        st.plotly_chart(fig)
 
 # Profit & Loss Tab
 with tabs[2]:
@@ -103,7 +129,15 @@ with tabs[2]:
     if st.session_state['financial_data_loaded']:
         st.write("Below is the profit and loss statement overview:")
         st.dataframe(st.session_state['pnl_concat'])
-        # Add visualizations for revenue, expenses, and profit
+
+        # Dropdown for Year Selection within the Profit & Loss Tab
+        available_years = st.session_state['pnl_concat']['fiscalDateEnding'].unique()
+        selected_year_pnl = st.selectbox("📅 Select a Year to View P&L Insights:", available_years, key="year_select_pnl")
+
+        # Plotly Stacked Bar Chart for Revenue vs. Expenses
+        filtered_data = st.session_state['pnl_concat'][st.session_state['pnl_concat']['fiscalDateEnding'] == selected_year_pnl]
+        fig = px.bar(filtered_data, x='fiscalDateEnding', y=['totalRevenue', 'operatingExpenses'], barmode='stack', title='Revenue vs. Operating Expenses')
+        st.plotly_chart(fig)
 
 # Cash Flow Tab
 with tabs[3]:
@@ -111,7 +145,16 @@ with tabs[3]:
     if st.session_state['financial_data_loaded']:
         st.write("Below is the cash flow statement overview:")
         st.dataframe(st.session_state['cf_concat'])
-        # Add visualizations for cash flows
+
+        # Dropdown for Year Selection within the Cash Flow Tab
+        available_years = st.session_state['cf_concat']['fiscalDateEnding'].unique()
+        selected_year_cf = st.selectbox("📅 Select a Year to View Cash Flow Insights:", available_years, key="year_select_cf")
+
+        # Plotly Line Chart for Operating, Investing, and Financing Cash Flows
+        filtered_data = st.session_state['cf_concat'][st.session_state['cf_concat']['fiscalDateEnding'] == selected_year_cf]
+        fig = px.line(filtered_data, x='fiscalDateEnding', y=['operatingCashflow', 'investingCashFlow', 'financingCashFlow'], title='Cash Flow Activities Over Time')
+        st.plotly_chart(fig)
+
 
 # Trends & Comparisons Tab
 with tabs[4]:
@@ -119,23 +162,23 @@ with tabs[4]:
     if st.session_state['financial_data_loaded']:
         # Dropdown for Year Selection
         available_years = st.session_state['bs_concat']['fiscalDateEnding'].unique()
-        selected_year = st.selectbox("📅 Select a Year to View Insights:", available_years, key="year_select")
+        selected_year = st.selectbox("📅 Select a Year to View Insights:", available_years, key="year_select_trends")
 
-        # Store selected year in session state
-        st.session_state['selected_year'] = selected_year
+        # Multi-Metric Comparison Line Chart
+        st.subheader("Multi-Year Comparison of Key Metrics")
+        filtered_data = st.session_state['bs_concat'][st.session_state['bs_concat']['fiscalDateEnding'].isin(available_years)]
+        fig = px.line(filtered_data, x='fiscalDateEnding', y=['totalAssets', 'totalLiabilities', 'equity'], title='Multi-Year Comparison of Total Assets, Liabilities, and Equity')
+        st.plotly_chart(fig)
 
-        # Button to generate insights for the selected year
-        if st.button("💡 Generate Insights for Selected Year"):
-            # Display Insights for the selected year
-            st.session_state['insights_generated'] = True
+        # Scatter Plot for Correlation Analysis (e.g., Net Income vs Operating Cash Flow)
+        st.subheader("Correlation Analysis: Net Income vs Operating Cash Flow")
+        pnl_data = st.session_state['pnl_concat']
+        cf_data = st.session_state['cf_concat']
+        merged_data = pd.merge(pnl_data, cf_data, on='fiscalDateEnding', suffixes=('_pnl', '_cf'))
+        fig_scatter = px.scatter(merged_data, x='netIncome', y='operatingCashflow', title='Net Income vs Operating Cash Flow')
+        st.plotly_chart(fig_scatter)
 
-        # Display Insights if Generated
-        if st.session_state['insights_generated'] and st.session_state['selected_year']:
-            st.subheader(f"**📊 Insights for the Year {st.session_state['selected_year']}**")
-            # Displaying detailed insights for selected year
-            # Add the existing insights code here
-
-# Footer with Contact Information (NEW)
+# Footer with Contact Information
 st.markdown(
     "<hr><p style='text-align:center; color:grey;'>Automated Financial Analysis Tool © 2024. Developed by [Your Name]</p>",
     unsafe_allow_html=True
