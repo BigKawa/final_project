@@ -111,6 +111,18 @@ This Jupyter notebook is used for:
     └── *.csv (Test data files for analysis)
 ```
 
+## Relevant Links
+
+### Trello Board
+You can follow the progress and planning of this project on my Trello board:
+[Trello Board for Linh's Final Project](https://trello.com/b/SQPO6fjd/linhfinal-project)
+
+### Google Slides Presentation
+For an overview of the project's presentation, check out the Google Slides:
+[Project Presentation](https://docs.google.com/presentation/d/1YyHnb7BpiSl3twxmCyPPFGuWQMfFaVRT2M3G5g98vUA/edit#slide=id.p)
+
+
+
 ## 🤝 How to Contribute
 If you'd like to contribute, please fork the repository and use a feature branch. Pull requests are welcome.
 
