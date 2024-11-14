@@ -6,6 +6,7 @@ import os
 
 # Windows path
 windows_path = "C:\\Users\\Nutzer\\GitHub\\Ironhack\\Groupwork\\final_project"
+# Mac path
 mac_path = "/Users/linh/Documents/GitHub/GroupWork/Final_Project/final_project"
 
 

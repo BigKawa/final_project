@@ -18,7 +18,7 @@ st.sidebar.markdown("[Alpha Vantage API Documentation](https://www.alphavantage.
 st.sidebar.markdown("[Streamlit Documentation](https://docs.streamlit.io/)")
 
 st.sidebar.header("📞 Contact Us")
-st.sidebar.info("For any questions, feel free to reach out at [your.email@example.com](mailto:your.email@example.com)")
+st.sidebar.info("For any questions, feel free to reach out at [linh.vuong@web.de](mailto:linh.vuong@web.de)")
 
 # Title and introduction
 st.title("📊 Automated Financial Report Analysis Tool")
@@ -52,14 +52,13 @@ if st.button("💼 Get Financial Data"):
         
         # Load the Data from AlphaVantage API
         bs_concat, cf_concat, pnl_concat = t.transform_pipeline(company_symbol)
-        
      
         # Ensure insights columns are strings to avoid serialization issues
         pnl_concat['insights_prev'] = pnl_concat['insights_prev'].astype(str)
         bs_concat['insights_prev'] = bs_concat['insights_prev'].astype(str)
         cf_concat['insights_prev'] = cf_concat['insights_prev'].astype(str)
 
-        # Store the data in session state
+        # Store the data in session state between Reruns 
         st.session_state['pnl_concat'] = pnl_concat
         st.session_state['bs_concat'] = bs_concat
         st.session_state['cf_concat'] = cf_concat
@@ -68,19 +67,22 @@ if st.button("💼 Get Financial Data"):
 
         st.success("🎉 Financial data successfully loaded! Navigate through the tabs to explore more.")
 
-    except Exception as e:
-        st.error(f"An error occurred while retrieving or processing the data: {e}")
+    except Exception as e:  # Errror Handling
+        st.error(f"An error occurred while retrieving or processing the data: {e}") # Retrieve the Error using e as an argument
 
 # Display Year Selection for Generating Insights Only
 if st.session_state['financial_data_loaded']:
     st.header("📅 Select Year for Generating Insights")
-    available_years = st.session_state['bs_concat']['fiscalDateEnding'].unique()
-    selected_year = st.selectbox("Select Year for Insights", available_years)
+    available_years = st.session_state['bs_concat']['fiscalDateEnding'].unique()  # get years 
+    selected_year = st.selectbox("Select Year for Insights", available_years)  # put years in select box
     
     # Store selected year in session state for insights generation only
-    st.session_state['selected_year'] = selected_year
+    st.session_state['selected_year'] = selected_year # save year in seperate session state / variable 
 
     # Filter data for the selected year (for insights only)
+    # Example:
+    # ['bs_concat']['fiscalDateEnding'] == st.session_state['selected_year']] is True for the selected year 
+    # gets all rows in 'bs_concat' where 'fiscalDateEnding' is equal to the selected year
     bs_year_data = st.session_state['bs_concat'][st.session_state['bs_concat']['fiscalDateEnding'] == st.session_state['selected_year']]
     pnl_year_data = st.session_state['pnl_concat'][st.session_state['pnl_concat']['fiscalDateEnding'] == st.session_state['selected_year']]
     cf_year_data = st.session_state['cf_concat'][st.session_state['cf_concat']['fiscalDateEnding'] == st.session_state['selected_year']]
@@ -96,6 +98,7 @@ if st.session_state['financial_data_loaded']:
     )
 
     # Filter data based on selected year range for plotting (for visualizations)
+    # Filtering between the sliders
     filtered_bs_data = st.session_state['bs_concat'][
         (st.session_state['bs_concat']['fiscalDateEnding'].astype(int) >= start_year) &
         (st.session_state['bs_concat']['fiscalDateEnding'].astype(int) <= end_year)
