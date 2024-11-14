@@ -339,3 +339,4 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+st.write(filtered_bs_data.columns)
