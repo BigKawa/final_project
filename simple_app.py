@@ -16,6 +16,8 @@ st.set_page_config(page_title="Automated Financial Report Analysis Tool", page_i
 st.sidebar.header("📚 Resources")
 st.sidebar.markdown("[Alpha Vantage API Documentation](https://www.alphavantage.co/documentation/)")
 st.sidebar.markdown("[Streamlit Documentation](https://docs.streamlit.io/)")
+st.sidebar.markdown("Company List")
+st.sidebar.markdown("[Download Link](https://www.alphavantage.co/query?function=LISTING_STATUS&apikey=demo)")
 
 st.sidebar.header("📞 Contact Us")
 st.sidebar.info("For any questions, feel free to reach out at [linh.vuong@web.de](mailto:linh.vuong@web.de)")
@@ -114,7 +116,7 @@ if st.session_state['financial_data_loaded']:
 
 # Display Tabs for Financial Statements and Insights
 if st.session_state['financial_data_loaded']:
-    tabs = st.tabs(["Overview", "Balance Sheet", "Profit & Loss", "Cash Flow", "Key Metrics Dashboard", "Correlation Analysis"])
+    tabs = st.tabs(["Overview", "Balance Sheet", "Profit & Loss", "Cash Flow", "Key Metrics Dashboard", "Additional Analysis"])
 
     # Overview Tab
     with tabs[0]:
