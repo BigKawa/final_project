@@ -8,7 +8,7 @@ api_key = "34KPIW7MIZGD3P5R"
 api = "NYY0WO4YPAEM5C6H"
 
 
-fd = FundamentalData(key= api, output_format="pandas")
+fd = FundamentalData(key= api_key, output_format="pandas")
 
 
 
