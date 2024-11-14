@@ -1,9 +1,6 @@
 
 
-
-
-
-columns = [
+columns_plot = [
     "fiscalDateEnding",
     "totalAssets",
     "totalCurrentAssets",

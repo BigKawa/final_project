@@ -3,9 +3,11 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import seaborn as sns
-import matplotlib.pyplot as plt
-import functions as py  # Import the functions module
+import matplotlib.pyplot as plt  # Import the functions module
 import transform as t
+from variables import columns_plot
+
+
 
 # Set Streamlit page configuration
 st.set_page_config(page_title="Automated Financial Report Analysis Tool", page_icon="📊", layout="wide")
@@ -294,7 +296,8 @@ if st.session_state['financial_data_loaded']:
         st.header("📊 Key Metrics Dashboard")
         selected_metrics = st.multiselect(
             "Select Metrics to Visualize", 
-            options=filtered_bs_data.columns, 
+            # options=filtered_bs_data.columns, 
+            options=columns_plot, 
             default=["totalAssets", "totalLiabilities"]
         )
         if selected_metrics:

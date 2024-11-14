@@ -12,10 +12,6 @@ fd = FundamentalData(key= api, output_format="pandas")
 
 
 
-# Test Input in this case Microsoft 
-input = "MSFT"  # later to replace with streamlit input
-
-
 def extract_financial_Data(input_symbol):
     """
     Extracts and transforms annual financial Data for a given company symbol.
@@ -41,10 +37,10 @@ def extract_financial_Data(input_symbol):
     # Check if Data files already exist to avoid redundant API calls
     if os.path.exists(f"Data/bs_annual_{input_symbol}.csv"):
         # Load Data from CSV if it already exists
-                
-       bs_annual = pd.read_csv(f"Data/bs_annual_{input_symbol}.csv")
-       pnl_annual = pd.read_csv(f"Data/pnl_annual_{input_symbol}.csv")
-       cf_annual = pd.read_csv(f"Data/cf_annual_{input_symbol}.csv")
+            
+        bs_annual = pd.read_csv(f"Data/bs_annual_{input_symbol}.csv")
+        pnl_annual = pd.read_csv(f"Data/pnl_annual_{input_symbol}.csv")
+        cf_annual = pd.read_csv(f"Data/cf_annual_{input_symbol}.csv")
 
         
     else:
