@@ -24,7 +24,7 @@ st.caption("Analyze the financial report of a company using Streamlit and Python
 
 # User Input Section
 st.header("🔍 Company Financial Data Analysis")
-company_symbol = st.text_input("Enter Company Symbol:", value="MSFT")
+company_symbol = st.text_input("Enter Company Symbol:", value="MSFT").upper()
 
 # Initialize session states to store data and track insights
 if 'financial_data_loaded' not in st.session_state:
@@ -47,18 +47,11 @@ if 'cf_insights_generated' not in st.session_state:
 # Button to trigger data retrieval and processing
 if st.button("💼 Get Financial Data"):
     try:
-        # Load the data (testing with CSV data as placeholder for now)
-        bs_annual = pd.read_csv("Data/bs_annual_MSFT.csv")
-        cf_annual = pd.read_csv("Data/cf_annual_MSFT.csv")
-        pnl_annual = pd.read_csv("Data/pnl_annual_MSFT.csv")
-
-        # Clean and process the data
-        bs_annual, pnl_annual, cf_annual = t.clean_dataframes(bs_annual, pnl_annual, cf_annual)
-        bs_annual, pnl_annual, cf_annual = t.calculate_kpis(bs_annual, pnl_annual, cf_annual)
-        pnl_annual_prev, bs_annual_prev, cf_annual_prev = t.create_previous_year_dataframes(bs_annual, pnl_annual, cf_annual)
-        pnl_concat, bs_concat, cf_concat = t.concatenate_dataframes(bs_annual, pnl_annual, cf_annual, bs_annual_prev, pnl_annual_prev, cf_annual_prev)
-        pnl_concat, bs_concat, cf_concat = t.generate_insights(pnl_concat, bs_concat, cf_concat)
-
+        
+        # Load the Data from AlphaVantage API
+        bs_concat, cf_concat, pnl_concat = t.transform_pipeline(company_symbol)
+        
+     
         # Ensure insights columns are strings to avoid serialization issues
         pnl_concat['insights_prev'] = pnl_concat['insights_prev'].astype(str)
         bs_concat['insights_prev'] = bs_concat['insights_prev'].astype(str)
@@ -333,3 +326,16 @@ if st.session_state['financial_data_loaded']:
         # Scatter Plot Matrix of Key Metrics
         fig_scatter_matrix = px.scatter_matrix(corr_data, dimensions=['totalAssets', 'totalLiabilities', 'debtToEquityRatio', 'netIncome', 'grossMargin'], title='Scatter Matrix of Key Metrics')
         st.plotly_chart(fig_scatter_matrix)
+
+# Footer with Contact Information and Copyright
+st.markdown(
+    """
+    <hr style="border:1px solid #ccc;">
+    <div style="text-align:center; color:grey;">
+        <p>Automated Financial Analysis Tool &copy; 2024. Developed by <a href="mailto:secret@secret.com">Linh Vuong</a></p>
+        <p>For inquiries or secret, please contact <a href="mailto:secret@secret.com">secret@secret.com</a></p>
+        <p><a href="htthttps://www.linkedin.com/in/linh-vuong/" target="_blank">Connect with us on LinkedIn</a></p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
