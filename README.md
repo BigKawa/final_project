@@ -120,7 +120,7 @@ You can follow the progress and planning of this project on my Trello board:
 
 ### 📊 Google Slides Presentation
 For an overview of the project's presentation, check out the Google Slides:
-[Project Presentation](https://docs.google.com/presentation/d/1YyHnb7BpiSl3twxmCyPPFGuWQMfFaVRT2M3G5g98vUA/edit#slide=id.p)
+[Project Presentation](https://docs.google.com/presentation/d/1GL8hiarSHIT9gDT1sEVN-nTWlM7Kamj-KoN9knJk8Bs/edit?usp=sharing)
 
 ## 🤝 How to Contribute
 If you'd like to contribute, please fork the repository and use a feature branch. Pull requests are welcome.
