@@ -5,14 +5,14 @@ import data_extraction_file as data
 import os
 
 # Windows path
-os.chdir('C:\\Users\\Nutzer\\GitHub\\Ironhack\\Groupwork\\final_project')
+windows_path = "C:\\Users\\Nutzer\\GitHub\\Ironhack\\Groupwork\\final_project"
+mac_path = "/Users/linh/Documents/GitHub/GroupWork/Final_Project/final_project"
 
 
 # checking working directory
 print("Current Working Directory:", os.getcwd())
-# os.chdir('C:\\Users\\Nutzer\\GitHub\\Ironhack\\Groupwork\\final_project')
+os.chdir(mac_path)
 print("Current Working Directory:", os.getcwd())
-
 
 # Initialize financial data
 def initialize_financial_data(input_symbol):
