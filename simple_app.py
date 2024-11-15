@@ -30,7 +30,7 @@ st.caption("Analyze the financial report of a company using Streamlit and Python
 st.header("🔍 Company Financial Data Analysis")
 company_symbol = st.text_input("Enter Company Symbol:", value="MSFT").upper()
 
-# Initialize session states to store data and track insights
+# Initialize session states to store data and track insights for coming Reruns
 if 'financial_data_loaded' not in st.session_state:
     st.session_state['financial_data_loaded'] = False
 if 'pnl_concat' not in st.session_state:
