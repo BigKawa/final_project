@@ -2,6 +2,7 @@ import pandas as pd
 from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.fundamentaldata import FundamentalData
 import os
+from api_keys import *
 
 api_key_2 ="JP7TLKK2YPF8I2ER"
 api_key = "34KPIW7MIZGD3P5R"
@@ -26,7 +27,7 @@ def extract_financial_Data(input_symbol):
     ----------
     input_symbol : str
         The stock ticker symbol of the company for which to extract financial Data.
-
+        example: "AAPL"
     Returns
     -------
     tuple of pandas.DataFrame
