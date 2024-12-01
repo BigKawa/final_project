@@ -92,24 +92,32 @@ def generate_automated_insights(df):
     # Gross Margin Insight
     if df['grossMargin'] < 60:
         insights.append(f"- Gross Margin ({df['fiscalDateEnding']}): {df['grossMargin']}% - Below industry standards, indicating challenges in cost control.")
+    elif 60 <= df['grossMargin'] <= 80:
+        insights.append(f"- Gross Margin ({df['fiscalDateEnding']}): {df['grossMargin']}% - Within normal industry range, indicating standard cost efficiency.")
     elif df['grossMargin'] > 80:
         insights.append(f"- Gross Margin ({df['fiscalDateEnding']}): {df['grossMargin']}% - Excellent margin, highlighting strong cost efficiency in production.")
 
     # Operating Margin Insight
     if df['operatingMargin'] < 30:
         insights.append(f"- Operating Margin ({df['fiscalDateEnding']}): {df['operatingMargin']}% - Low margin, suggesting potential inefficiencies in managing operational costs.")
+    elif 30 <= df['operatingMargin'] <= 50:
+        insights.append(f"- Operating Margin ({df['fiscalDateEnding']}): {df['operatingMargin']}% - Within normal range, reflecting adequate management of operational costs.")
     elif df['operatingMargin'] > 50:
         insights.append(f"- Operating Margin ({df['fiscalDateEnding']}): {df['operatingMargin']}% - High margin, reflecting efficient management of operational costs.")
 
     # Net Profit Margin Insight
     if df['netProfitMargin'] < 20:
         insights.append(f"- Net Profit Margin ({df['fiscalDateEnding']}): {df['netProfitMargin']}% - Indicates profitability challenges.")
+    elif 20 <= df['netProfitMargin'] <= 35:
+        insights.append(f"- Net Profit Margin ({df['fiscalDateEnding']}): {df['netProfitMargin']}% - Within normal industry range, indicating reasonable profitability.")
     elif df['netProfitMargin'] > 35:
         insights.append(f"- Net Profit Margin ({df['fiscalDateEnding']}): {df['netProfitMargin']}% - Strong overall profitability.")
 
     # Interest Coverage Ratio Insight
     if df['interestCoverageRatio'] < 10:
         insights.append(f"- Interest Coverage Ratio ({df['fiscalDateEnding']}): {df['interestCoverageRatio']} - Financial vulnerability in covering interest payments.")
+    elif 10 <= df['interestCoverageRatio'] <= 15:
+        insights.append(f"- Interest Coverage Ratio ({df['fiscalDateEnding']}): {df['interestCoverageRatio']} - Within normal range, indicating adequate ability to cover interest obligations.")
     elif df['interestCoverageRatio'] > 15:
         insights.append(f"- Interest Coverage Ratio ({df['fiscalDateEnding']}): {df['interestCoverageRatio']} - Healthy ratio, no issues covering interest obligations.")
 
