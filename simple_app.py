@@ -5,7 +5,7 @@ import plotly.express as px
 import seaborn as sns
 import matplotlib.pyplot as plt  # Import the functions module
 import transform as t
-from variables import columns_plot
+from variables import *
 
 
 
@@ -21,6 +21,39 @@ st.sidebar.markdown("[Download Link](https://www.alphavantage.co/query?function=
 
 st.sidebar.header("📞 Contact Us")
 st.sidebar.info("For any questions, feel free to reach out at [linh.vuong@web.de](mailto:linh.vuong@web.de)")
+
+# Sidebar Header for KPI Definitions
+st.sidebar.header("📊 KPI Definitions")
+
+# Adding improved styling for definitions to make them look more attractive
+def styled_markdown(name, definition, name_color="#FFD700", definition_color="#FFFFFF", background_color="#222222"):
+    return f'<p style="background-color:{background_color}; padding:6px; border-radius:6px; font-family:Arial, sans-serif;">' \
+           f'<strong style="color:{name_color}; font-size:16px;">{name}:</strong> ' \
+           f'<span style="color:{definition_color}; font-size:14px;">{definition}</span>' \
+           f'</p>'
+
+# Define Colors for Different KPI Groups
+profit_loss_color = "#1E90FF"  # Dodger blue
+cash_flow_color = "#32CD32"     # Lime green
+balance_sheet_color = "#FF4500" # Orange red
+
+# Create Expandable Sections for KPI Groups, with all KPIs and their definitions inside
+with st.sidebar.expander("🏦 Balance Sheet KPIs", expanded=False):
+    for kpi in balance_sheet_kpis:
+        definition = kpi_definitions.get(kpi, "Definition not available")
+        st.markdown(styled_markdown(kpi.replace('_', ' ').title(), definition, name_color="#FFFFFF", background_color=balance_sheet_color), unsafe_allow_html=True)
+
+
+with st.sidebar.expander("📈 Profit & Loss KPIs", expanded=False):
+    for kpi in profit_loss_kpis:
+        definition = kpi_definitions.get(kpi, "Definition not available")
+        st.markdown(styled_markdown(kpi.replace('_', ' ').title(), definition, name_color="#FFFFFF", background_color=profit_loss_color), unsafe_allow_html=True)
+
+with st.sidebar.expander("💸 Cash Flow KPIs", expanded=False):
+    for kpi in cash_flow_kpis:
+        definition = kpi_definitions.get(kpi, "Definition not available")
+        st.markdown(styled_markdown(kpi.replace('_', ' ').title(), definition, name_color="#FFFFFF", background_color=cash_flow_color), unsafe_allow_html=True)
+
 
 # Title and introduction
 st.title("📊 Automated Financial Report Analysis Tool")
