@@ -160,91 +160,105 @@ def transform_pipeline(input_symbol):
 # print(pnl_concat)
 
 
-def calculate_health_score(data):
+def calculate_health_score(pnl_data, bs_data, cf_data):
     """
     Calculates the overall health score for a company based on various financial KPIs.
 
     Parameters
     ----------
-    data : pandas.Series
-        A row from the dataframe containing financial KPIs for a given year.
+    pnl_data : pandas.Series
+        A row from the Profit & Loss dataframe containing financial KPIs for a given year.
+    bs_data : pandas.Series
+        A row from the Balance Sheet dataframe containing financial KPIs for a given year.
+    cf_data : pandas.Series
+        A row from the Cash Flow dataframe containing financial KPIs for a given year.
 
     Returns
     -------
     int
         The overall health score of the company (0 to 100).
     """
-    score = 50  # Start with a base score
+    # Start with a base score of 40 for a more forgiving baseline
+    score = 40  
 
-    # Gross Margin
-    if data['grossMargin'] > 80:
-        score += 10
-    elif 60 <= data['grossMargin'] <= 80:
-        score += 5
-    elif data['grossMargin'] < 60:
-        score -= 5
+    # Gross Margin (from P&L)
+    if pnl_data.get('grossMargin', None) is not None:
+        if pnl_data['grossMargin'] > 70:
+            score += 10
+        elif 50 <= pnl_data['grossMargin'] <= 70:
+            score += 7
+        else:
+            score -= 3
 
-    # Operating Margin
-    if data['operatingMargin'] > 50:
-        score += 10
-    elif 30 <= data['operatingMargin'] <= 50:
-        score += 5
-    elif data['operatingMargin'] < 30:
-        score -= 5
+    # Operating Margin (from P&L)
+    if pnl_data.get('operatingMargin', None) is not None:
+        if pnl_data['operatingMargin'] > 30:
+            score += 8
+        elif 15 <= pnl_data['operatingMargin'] <= 30:
+            score += 5
+        else:
+            score -= 3
 
-    # Net Profit Margin
-    if data['netProfitMargin'] > 35:
-        score += 10
-    elif 20 <= data['netProfitMargin'] <= 35:
-        score += 5
-    elif data['netProfitMargin'] < 20:
-        score -= 5
+    # Net Profit Margin (from P&L)
+    if pnl_data.get('netProfitMargin', None) is not None:
+        if pnl_data['netProfitMargin'] > 20:
+            score += 8
+        elif 10 <= pnl_data['netProfitMargin'] <= 20:
+            score += 5
+        else:
+            score -= 3
 
-    # Interest Coverage Ratio
-    if data['interestCoverageRatio'] > 15:
-        score += 10
-    elif 10 <= data['interestCoverageRatio'] <= 15:
-        score += 5
-    elif data['interestCoverageRatio'] < 10:
-        score -= 10
+    # Interest Coverage Ratio (from P&L or Balance Sheet)
+    if pnl_data.get('interestCoverageRatio', None) is not None:
+        if pnl_data['interestCoverageRatio'] > 10:
+            score += 7
+        elif 5 <= pnl_data['interestCoverageRatio'] <= 10:
+            score += 4
+        else:
+            score -= 5
 
-    # Debt-to-Equity Ratio
-    if data['debtToEquityRatio'] < 1:
-        score += 10
-    elif 1 <= data['debtToEquityRatio'] <= 2:
-        score += 5
-    elif data['debtToEquityRatio'] > 2:
-        score -= 10
+    # Debt-to-Equity Ratio (from Balance Sheet)
+    if bs_data.get('debtToEquityRatio', None) is not None:
+        if bs_data['debtToEquityRatio'] < 1:
+            score += 8
+        elif 1 <= bs_data['debtToEquityRatio'] <= 2:
+            score += 5
+        else:
+            score -= 6
 
-    # Current Ratio
-    if data['currentRatio'] > 2:
-        score += 10
-    elif 1 <= data['currentRatio'] <= 2:
-        score += 5
-    elif data['currentRatio'] < 1:
-        score -= 10
+    # Current Ratio (from Balance Sheet)
+    if bs_data.get('currentRatio', None) is not None:
+        if bs_data['currentRatio'] > 2:
+            score += 7
+        elif 1 <= bs_data['currentRatio'] <= 2:
+            score += 4
+        else:
+            score -= 5
 
-    # Quick Ratio
-    if data['quickRatio'] > 1:
-        score += 5
-    elif data['quickRatio'] < 1:
-        score -= 5
+    # Quick Ratio (from Balance Sheet)
+    if bs_data.get('quickRatio', None) is not None:
+        if bs_data['quickRatio'] > 1:
+            score += 5
+        else:
+            score -= 3
 
-    # Free Cash Flow
-    if data['freeCashFlow'] > 1e10:
-        score += 10
-    elif 5e9 <= data['freeCashFlow'] <= 1e10:
-        score += 5
-    elif data['freeCashFlow'] < 0:
-        score -= 10
+    # Free Cash Flow (from Cash Flow)
+    if cf_data.get('freeCashFlow', None) is not None:
+        if cf_data['freeCashFlow'] > 1e10:
+            score += 9
+        elif 5e9 <= cf_data['freeCashFlow'] <= 1e10:
+            score += 6
+        else:
+            score -= 4
 
-    # Operating Cash Flow Growth
-    if data['operatingCashFlowGrowth'] > 10:
-        score += 5
-    elif 0 <= data['operatingCashFlowGrowth'] <= 10:
-        score += 2
-    elif data['operatingCashFlowGrowth'] < 0:
-        score -= 5
+    # Operating Cash Flow Growth (from Cash Flow)
+    if cf_data.get('operatingCashFlowGrowth', None) is not None:
+        if cf_data['operatingCashFlowGrowth'] > 10:
+            score += 6
+        elif 0 <= cf_data['operatingCashFlowGrowth'] <= 10:
+            score += 3
+        else:
+            score -= 4
 
     # Ensure the score is within the range of 0 to 100
     score = max(0, min(score, 100))

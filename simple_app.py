@@ -122,6 +122,72 @@ if st.session_state['financial_data_loaded']:
     pnl_year_data = st.session_state['pnl_concat'][st.session_state['pnl_concat']['fiscalDateEnding'] == st.session_state['selected_year']]
     cf_year_data = st.session_state['cf_concat'][st.session_state['cf_concat']['fiscalDateEnding'] == st.session_state['selected_year']]
 
+# Make sure financial data has been loaded and a year has been selected
+if st.session_state['financial_data_loaded'] and st.session_state['selected_year']:
+    st.header("🏥 Company Financial Health Score for Selected Year")
+
+    # Filter data for the selected year
+    selected_year = st.session_state['selected_year']
+    pnl_year_data = st.session_state['pnl_concat'][st.session_state['pnl_concat']['fiscalDateEnding'] == selected_year]
+    bs_year_data = st.session_state['bs_concat'][st.session_state['bs_concat']['fiscalDateEnding'] == selected_year]
+    cf_year_data = st.session_state['cf_concat'][st.session_state['cf_concat']['fiscalDateEnding'] == selected_year]
+
+    # Ensure that the selected year data exists for all three financial statements
+    if not pnl_year_data.empty and not bs_year_data.empty and not cf_year_data.empty:
+        # Extract the single row for the selected year
+        pnl_row = pnl_year_data.iloc[0]
+        bs_row = bs_year_data.iloc[0]
+        cf_row = cf_year_data.iloc[0]
+
+        # Calculate health score based on the selected year's data
+        health_score = t.calculate_health_score(pnl_row, bs_row, cf_row)
+
+        # Determine label, color, and icon based on health score
+        if health_score >= 85:
+            label = "Excellent"
+            color = "#28a745"  # Green
+            icon = "🏆"
+        elif 70 <= health_score < 85:
+            label = "Good"
+            color = "#17a2b8"  # Blue
+            icon = "👍"
+        elif 50 <= health_score < 70:
+            label = "Average"
+            color = "#ffc107"  # Yellow
+            icon = "⚠️"
+        else:
+            label = "Poor"
+            color = "#dc3545"  # Red
+            icon = "❌"
+
+        # Display the health score with styled markdown
+        st.markdown(
+            f"""
+            <div style="background-color:{color}; padding: 20px; border-radius: 10px; text-align: center;">
+                <h2 style="color:white;">{icon} Financial Health Score: {health_score} ({label})</h2>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # Display the health score as a progress bar (like a battery)
+        st.progress(health_score / 100)
+
+        # Provide additional tips based on the health score
+        if health_score >= 85:
+            st.success("The company is in excellent financial health. This Company is doing well!")
+        elif 70 <= health_score < 85:
+            st.info("The company is in good financial health, but there may be opportunities for optimization.")
+        elif 50 <= health_score < 70:
+            st.warning("The company is in average financial health. This company may require strategies to improve key metrics.")
+        else:
+            st.error("The company's financial health is poor. Immediate action is recommended to improve stability for this company.")
+
+    else:
+        st.warning(f"Data for the year {selected_year} is incomplete or missing.")
+
+
+
 # Display Year Range Slider for Plot Visualizations
 if st.session_state['financial_data_loaded']:
     st.header("📊 Select Year Range to Visualize Trends")
