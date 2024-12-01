@@ -158,3 +158,95 @@ def transform_pipeline(input_symbol):
 # print(bs_concat)
 # print(cf_concat)
 # print(pnl_concat)
+
+
+def calculate_health_score(data):
+    """
+    Calculates the overall health score for a company based on various financial KPIs.
+
+    Parameters
+    ----------
+    data : pandas.Series
+        A row from the dataframe containing financial KPIs for a given year.
+
+    Returns
+    -------
+    int
+        The overall health score of the company (0 to 100).
+    """
+    score = 50  # Start with a base score
+
+    # Gross Margin
+    if data['grossMargin'] > 80:
+        score += 10
+    elif 60 <= data['grossMargin'] <= 80:
+        score += 5
+    elif data['grossMargin'] < 60:
+        score -= 5
+
+    # Operating Margin
+    if data['operatingMargin'] > 50:
+        score += 10
+    elif 30 <= data['operatingMargin'] <= 50:
+        score += 5
+    elif data['operatingMargin'] < 30:
+        score -= 5
+
+    # Net Profit Margin
+    if data['netProfitMargin'] > 35:
+        score += 10
+    elif 20 <= data['netProfitMargin'] <= 35:
+        score += 5
+    elif data['netProfitMargin'] < 20:
+        score -= 5
+
+    # Interest Coverage Ratio
+    if data['interestCoverageRatio'] > 15:
+        score += 10
+    elif 10 <= data['interestCoverageRatio'] <= 15:
+        score += 5
+    elif data['interestCoverageRatio'] < 10:
+        score -= 10
+
+    # Debt-to-Equity Ratio
+    if data['debtToEquityRatio'] < 1:
+        score += 10
+    elif 1 <= data['debtToEquityRatio'] <= 2:
+        score += 5
+    elif data['debtToEquityRatio'] > 2:
+        score -= 10
+
+    # Current Ratio
+    if data['currentRatio'] > 2:
+        score += 10
+    elif 1 <= data['currentRatio'] <= 2:
+        score += 5
+    elif data['currentRatio'] < 1:
+        score -= 10
+
+    # Quick Ratio
+    if data['quickRatio'] > 1:
+        score += 5
+    elif data['quickRatio'] < 1:
+        score -= 5
+
+    # Free Cash Flow
+    if data['freeCashFlow'] > 1e10:
+        score += 10
+    elif 5e9 <= data['freeCashFlow'] <= 1e10:
+        score += 5
+    elif data['freeCashFlow'] < 0:
+        score -= 10
+
+    # Operating Cash Flow Growth
+    if data['operatingCashFlowGrowth'] > 10:
+        score += 5
+    elif 0 <= data['operatingCashFlowGrowth'] <= 10:
+        score += 2
+    elif data['operatingCashFlowGrowth'] < 0:
+        score -= 5
+
+    # Ensure the score is within the range of 0 to 100
+    score = max(0, min(score, 100))
+
+    return score
