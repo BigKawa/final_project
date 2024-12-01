@@ -246,15 +246,21 @@ if st.session_state['financial_data_loaded']:
 
         # Displaying Profit and Loss Insights if generated
         if st.session_state['pnl_insights_generated'] and not pnl_year_data.empty:
-            st.subheader("💸 Profit and Loss Insights")
+            st.subheader("💸 Profit and Loss Insights:")
             if 'insights' in pnl_year_data.columns:
                 st.markdown(f"**Profit and Loss Current Insights**: {pnl_year_data['insights'].values[0]}")
             if 'previous_year_insights' in pnl_year_data.columns:
-                st.markdown(f"**Previous Year Insights**: {pnl_year_data['previous_year_insights'].values[0]}")
+                st.markdown("**Previous Year Insights**:")
+                st.write("")  # Adds an empty line
+                st.markdown(pnl_year_data['previous_year_insights'].values[0])
             if 'year_comparison_insight' in pnl_year_data.columns:
-                st.markdown(f"**Year Comparison Insight**: {pnl_year_data['year_comparison_insight'].values[0]}")
+                st.markdown("**Year Comparison Insight**:")
+                st.write("")  # Adds an empty line
+                st.markdown(pnl_year_data['year_comparison_insight'].values[0])
             if 'patterns' in pnl_year_data.columns:
-                st.markdown(f"**Patterns**: {pnl_year_data['patterns'].values[0]}")
+                st.markdown("**Patterns**:")
+                st.write("")  # Adds an empty line
+                st.markdown(pnl_year_data['patterns'].values[0])
         else:
             st.warning("No insights available for the Profit and Loss Statement for the selected year.")
 
