@@ -187,17 +187,47 @@ if st.session_state['financial_data_loaded']:
         # Displaying Balance Sheet Insights if generated
         if st.session_state['bs_insights_generated'] and not bs_year_data.empty:
             st.subheader("🧾 Balance Sheet Insights")
+            # Balance Sheet Insights
             if 'insights' in bs_year_data.columns:
-                st.markdown(f"**Balance Sheet Insights**: {bs_year_data['insights'].values[0]}")
-            if 'previous_year_insights' in bs_year_data.columns:
-                st.markdown(f"**Previous Year Insights**: {bs_year_data['previous_year_insights'].values[0]}")
-            if 'year_comparison_insight' in bs_year_data.columns:
-                st.markdown(f"**Year Comparison Insight**: {bs_year_data['year_comparison_insight'].values[0]}")
-            if 'patterns' in bs_year_data.columns:
-                st.markdown(f"**Patterns**: {bs_year_data['patterns'].values[0]}")
-        else:
-            st.warning("No insights available for the Balance Sheet for the selected year.")
+                st.markdown(
+                    '<p style="color:#32CD32; font-size:24px; background-color:#333333; padding:10px; border-radius:10px; text-align:center;"><strong>📊 Balance Sheet Current Insights</strong></p>',
+                    unsafe_allow_html=True
+                )
+                st.markdown("<br>", unsafe_allow_html=True)  # Adds an empty line
+                st.markdown(bs_year_data['insights'].values[0])
 
+            # Previous Year Insights
+            if 'previous_year_insights' in bs_year_data.columns:
+                st.markdown(
+                    '<p style="color:#FFA500; font-size:22px; background-color:#444444; padding:8px; border-radius:8px; text-align:center;"><strong>📅 Previous Year Insights</strong></p>',
+                    unsafe_allow_html=True
+                )
+                st.markdown("<br>", unsafe_allow_html=True)  # Adds an empty line
+                st.markdown(bs_year_data['previous_year_insights'].values[0])
+
+            # Year Comparison Insight
+            if 'year_comparison_insight' in bs_year_data.columns:
+                st.markdown(
+                    '<p style="color:#00BFFF; font-size:20px; background-color:#333333; padding:6px; border-radius:8px; text-align:center;"><strong>🔄 Year Comparison Insight</strong></p>',
+                    unsafe_allow_html=True
+                )
+                st.markdown("<br>", unsafe_allow_html=True)  # Adds an empty line
+                st.markdown(bs_year_data['year_comparison_insight'].values[0])
+
+            # Patterns
+            if 'patterns' in bs_year_data.columns:
+                st.markdown(
+                    '<p style="color:#FFD700; font-size:18px; background-color:#444444; padding:4px; border-radius:8px; text-align:center;"><strong>🔍 Patterns</strong></p>',
+                    unsafe_allow_html=True
+                )
+                st.markdown("<br>", unsafe_allow_html=True)  # Adds an empty line
+                st.markdown(bs_year_data['patterns'].values[0])
+
+            else:
+                st.warning("No insights available for the Balance Sheet for the selected year.")
+
+                
+                
     # Profit & Loss Tab
     with tabs[2]:
         st.header("📄 Profit and Loss Statement Data")
@@ -248,22 +278,43 @@ if st.session_state['financial_data_loaded']:
         if st.session_state['pnl_insights_generated'] and not pnl_year_data.empty:
             st.subheader("💸 Profit and Loss Insights:")
             if 'insights' in pnl_year_data.columns:
-                st.markdown(f"**Profit and Loss Current Insights**: {pnl_year_data['insights'].values[0]}")
+                st.markdown(
+                    '<p style="color:#FFD700; font-size:24px; background-color:#333333; padding:10px; border-radius:10px; text-align:center;"><strong>💰 Profit and Loss Current Insights</strong></p>',
+                    unsafe_allow_html=True
+                )
+                st.write("")  # Adds an empty line
+                st.markdown(pnl_year_data['insights'].values[0])
+
+            # Previous Year Insights - Adding 🕒 Emoji for time aspect of previous year
             if 'previous_year_insights' in pnl_year_data.columns:
-                st.markdown("**Previous Year Insights**:")
+                st.markdown(
+    '<p style="color:#FFA500; font-size:22px; background-color:#444444; padding:8px; border-radius:8px; text-align:center;"><strong>📅 Previous Year Insights</strong></p>',
+    unsafe_allow_html=True
+)
                 st.write("")  # Adds an empty line
                 st.markdown(pnl_year_data['previous_year_insights'].values[0])
+
+            # Year Comparison Insight - Adding 📊 Emoji for comparison
             if 'year_comparison_insight' in pnl_year_data.columns:
-                st.markdown("**Year Comparison Insight**:")
+                st.markdown(
+    '<p style="color:#00BFFF; font-size:20px; background-color:#333333; padding:6px; border-radius:8px; text-align:center;"><strong>🔄 Year Comparison Insight</strong></p>',
+    unsafe_allow_html=True
+)
+
                 st.write("")  # Adds an empty line
                 st.markdown(pnl_year_data['year_comparison_insight'].values[0])
+
+            # Patterns - Adding 🔍 Emoji to indicate looking for patterns
             if 'patterns' in pnl_year_data.columns:
-                st.markdown("**Patterns**:")
+                st.markdown(
+    '<p style="color:#FFD700; font-size:18px; background-color:#444444; padding:4px; border-radius:8px; text-align:center;"><strong>🔍 Patterns</strong></p>',
+    unsafe_allow_html=True
+)
                 st.write("")  # Adds an empty line
                 st.markdown(pnl_year_data['patterns'].values[0])
-        else:
-            st.warning("No insights available for the Profit and Loss Statement for the selected year.")
 
+            else:
+                st.warning("No insights available for the Profit and Loss Statement for the selected year.")
     # Cash Flow Tab
     with tabs[3]:
         st.header("📄 Cash Flow Data")
@@ -291,16 +342,42 @@ if st.session_state['financial_data_loaded']:
         # Displaying Cash Flow Insights if generated
         if st.session_state['cf_insights_generated'] and not cf_year_data.empty:
             st.subheader("💰 Cash Flow Insights")
+            # Cash Flow Current Insights
             if 'insights' in cf_year_data.columns:
-                st.markdown(f"**Cash Flow Current Insights**: {cf_year_data['insights'].values[0]}")
+                st.markdown(
+    '<p style="color:#00FF00; font-size:24px; background-color:#333333; padding:10px; border-radius:10px; text-align:center;"><strong>💸 Cash Flow Current Insights</strong></p>',
+    unsafe_allow_html=True
+)
+
+                st.markdown("<br>", unsafe_allow_html=True)  # Adds an empty line
+                st.markdown(cf_year_data['insights'].values[0])
+
+            # Previous Year Insights
             if 'previous_year_insights' in cf_year_data.columns:
-                st.markdown(f"**Previous Year Insights**: {cf_year_data['previous_year_insights'].values[0]}")
+                st.markdown(
+    '<p style="color:#FFA500; font-size:22px; background-color:#444444; padding:8px; border-radius:8px; text-align:center;"><strong>📅 Previous Year Insights</strong></p>',
+    unsafe_allow_html=True
+)
+                st.markdown("<br>", unsafe_allow_html=True)  # Adds an empty line
+                st.markdown(cf_year_data['previous_year_insights'].values[0])
+
+            # Year Comparison Insight
             if 'year_comparison_insight' in cf_year_data.columns:
-                st.markdown(f"**Year Comparison Insight**: {cf_year_data['year_comparison_insight'].values[0]}")
+                st.markdown(
+    '<p style="color:#00BFFF; font-size:20px; background-color:#333333; padding:6px; border-radius:8px; text-align:center;"><strong>🔄 Year Comparison Insight</strong></p>',
+    unsafe_allow_html=True
+)
+                st.markdown("<br>", unsafe_allow_html=True)  # Adds an empty line
+                st.markdown(cf_year_data['year_comparison_insight'].values[0])
+
+            # Patterns
             if 'patterns' in cf_year_data.columns:
-                st.markdown(f"**Patterns**: {cf_year_data['patterns'].values[0]}")
-        else:
-            st.warning("No insights available for the Cash Flow Statement for the selected year.")
+                st.markdown(
+    '<p style="color:#FFD700; font-size:18px; background-color:#444444; padding:4px; border-radius:8px; text-align:center;"><strong>🔍 Patterns</strong></p>',
+    unsafe_allow_html=True
+)
+                st.markdown("<br>", unsafe_allow_html=True)  # Adds an empty line
+                st.markdown(cf_year_data['patterns'].values[0])
 
     # Key Metrics Dashboard Tab (Tab 4)
     with tabs[4]:

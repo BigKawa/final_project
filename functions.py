@@ -34,29 +34,6 @@ def cleaning(dataframe):
     return dataframe
 
 
-def create_prev_year_old (df_current_year):    
-    """
-    Creates a new dataframe df_prev with data from the previous year.
-
-    Parameters
-    ----------
-    df_current_year : pandas.DataFrame
-        A dataframe containing the current year's data for the company.
-
-    Returns
-    -------
-    pandas.DataFrame
-        The newly created dataframe with data from the previous year.
-    """
-    
-    # Create a new pnl dataframe with previous year data
-    df_prev = df_current_year.set_index("fiscalDateEnding").shift(-1)
-    df_prev.fillna(0,inplace=True)
-    df_prev = df_prev.select_dtypes(exclude=['object']).astype(int).reset_index(drop=True)
-    df_prev.columns = [F"{col}_prev" for col in df_prev.columns]
-    
-    return df_prev
-
 
 def create_prev_year(df_current_year):    
     """
@@ -84,7 +61,9 @@ def create_prev_year(df_current_year):
     df_prev[numeric_cols.columns] = numeric_cols.applymap(lambda x: 0 if not np.isfinite(x) else x) # Replace infinite values with 0
 
     # Convert numeric columns to integer type
-    df_prev[numeric_cols.columns] = df_prev[numeric_cols.columns].astype('int64')
+    # Round the numeric columns to, for example, 2 decimal places
+    df_prev[numeric_cols.columns] = numeric_cols.round(2)
+
 
     # Reset the index and rename columns to indicate previous year data
     df_prev.reset_index(drop=True, inplace=True)
@@ -197,7 +176,6 @@ def generate_pnl_yoy_insights(pnl_concated):
         insights.append(f"- EBITDA ({pnl_concated['fiscalDateEnding']}): {pnl_concated['ebitda']} (previous year: {pnl_concated['ebitda_prev']}) - Change: {ebitda_change:.2f}% compared to the previous year.")
 
     return "\n".join(insights)
-
 def yeah_comparison_pnl(pattern_df_pnl):
     """
     Detects financial patterns in multiple metrics over multiple years and generates insights as a bullet-point formatted string.
@@ -264,8 +242,53 @@ def yeah_comparison_pnl(pattern_df_pnl):
             elif change < 0:
                 insights.append(f"- Net Income has declined compared to the previous year, which may signal profitability challenges.")
 
+    # Pattern 5: Interest Coverage Ratio
+    if 'interestCoverageRatio' in pattern_df_pnl.index:
+        interest_coverage_current = pattern_df_pnl['interestCoverageRatio']
+        interest_coverage_prev = pattern_df_pnl.get('interestCoverageRatio_prev', None)
+        change = calculate_growth(interest_coverage_current, interest_coverage_prev)
+        if change is not None:
+            if change > 0:
+                insights.append(f"- Interest Coverage Ratio has increased compared to the previous year, indicating better ability to cover interest expenses.")
+            elif change < 0:
+                insights.append(f"- Interest Coverage Ratio has decreased compared to the previous year, indicating increased financial strain from interest payments.")
+
+    # Pattern 6: Operating Expenses Insight
+    if 'operatingExpenses' in pattern_df_pnl.index:
+        operating_expenses_current = pattern_df_pnl['operatingExpenses']
+        operating_expenses_prev = pattern_df_pnl.get('operatingExpenses_prev', None)
+        change = calculate_growth(operating_expenses_current, operating_expenses_prev)
+        if change is not None:
+            if change > 0:
+                insights.append(f"- Operating Expenses have increased compared to the previous year, which may impact profitability.")
+            elif change < 0:
+                insights.append(f"- Operating Expenses have decreased compared to the previous year, suggesting improved cost control.")
+
+    # Pattern 7: EBITDA Insight
+    if 'ebitda' in pattern_df_pnl.index:
+        ebitda_current = pattern_df_pnl['ebitda']
+        ebitda_prev = pattern_df_pnl.get('ebitda_prev', None)
+        change = calculate_growth(ebitda_current, ebitda_prev)
+        if change is not None:
+            if change > 0:
+                insights.append(f"- EBITDA has increased compared to the previous year, indicating improved earnings potential.")
+            elif change < 0:
+                insights.append(f"- EBITDA has decreased compared to the previous year, which may indicate declining operational profitability.")
+
+    # Pattern 8: Net Profit Margin Insight
+    if 'netProfitMargin' in pattern_df_pnl.index:
+        net_profit_margin_current = pattern_df_pnl['netProfitMargin']
+        net_profit_margin_prev = pattern_df_pnl.get('netProfitMargin_prev', None)
+        change = calculate_growth(net_profit_margin_current, net_profit_margin_prev)
+        if change is not None:
+            if change > 0:
+                insights.append(f"- Net Profit Margin has improved compared to the previous year, reflecting better overall profitability.")
+            elif change < 0:
+                insights.append(f"- Net Profit Margin has decreased compared to the previous year, indicating challenges in maintaining profitability.")
+
     # Combine all insights into a bullet-point formatted string
     return "\n".join(insights)
+
 
 def generate_insights_pnl_multi_year(dataframe):
     """
