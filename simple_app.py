@@ -111,6 +111,7 @@ if st.session_state['financial_data_loaded']:
     available_years = st.session_state['bs_concat']['fiscalDateEnding'].unique()  # get years 
     selected_year = st.selectbox("Select Year for Insights", available_years)  # put years in select box
     
+    
     # Store selected year in session state for insights generation only
     st.session_state['selected_year'] = selected_year # save year in seperate session state / variable 
 
@@ -125,6 +126,28 @@ if st.session_state['financial_data_loaded']:
 # Make sure financial data has been loaded and a year has been selected
 if st.session_state['financial_data_loaded'] and st.session_state['selected_year']:
     st.header("🏥 Company Financial Health Score for Selected Year")
+    st.markdown(
+    """
+    <style>
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    .animated-text {
+        text-align: center;
+        color: #1e90ff;
+        font-size: 24px;
+        text-shadow: 2px 2px 4px rgba(30, 144, 255, 0.4);
+        animation: pulse 2s infinite;
+    }
+    </style>
+    <div class="animated-text">🚧 Still a Work in Progress</div>
+    """,
+    unsafe_allow_html=True
+)
+
+
 
     # Filter data for the selected year
     selected_year = st.session_state['selected_year']
@@ -160,15 +183,61 @@ if st.session_state['financial_data_loaded'] and st.session_state['selected_year
             color = "#dc3545"  # Red
             icon = "❌"
 
-        # Display the health score with styled markdown
+        # Set colors based on health score ranges
+        if health_score >= 80:
+            color_gradient = "linear-gradient(135deg, #57B65F, #88D498)"  # Brightened green
+            text_color = "#ffffff"  # White for readability
+        elif health_score >= 60:
+            color_gradient = "linear-gradient(135deg, #4E92E3, #83C1F4)"  # Brighter blue
+            text_color = "#ffffff"  # White for readability
+        elif health_score >= 40:
+            color_gradient = "linear-gradient(135deg, #FFDD67, #FFE28D)"  # Softer yellow
+            text_color = "#333333"  # Dark grey for good contrast
+        elif health_score >= 20:
+            color_gradient = "linear-gradient(135deg, #FF8E42, #FFB876)"  # Slightly softer orange
+            text_color = "#ffffff"  # White for readability
+        else:
+            color_gradient = "linear-gradient(135deg, #F26D6D, #FF9999)"  # Softer red/pink
+            text_color = "#ffffff"  # White for readability
+
+                    
+                
+                
+
         st.markdown(
             f"""
-            <div style="background-color:{color}; padding: 20px; border-radius: 10px; text-align: center;">
-                <h2 style="color:white;">{icon} Financial Health Score: {health_score} ({label})</h2>
+            <style>
+            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+
+            .animated-container {{
+                background: {color_gradient};  /* Dynamic Gradient */
+                padding: 25px;
+                border-radius: 15px;
+                text-align: center;
+                font-family: 'Poppins', sans-serif;  /* Modern Font */
+                transition: transform 0.3s ease-in-out;  /* Smooth transition for hover effect */
+            }}
+
+            .animated-container:hover {{
+                transform: scale(1.05);  /* Slightly increase size on hover */
+            }}
+
+            .animated-title {{
+                color: {text_color};  /* Dynamic Text Color for Better Contrast */
+                font-size: 28px;
+                font-weight: bold;
+                text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+            }}
+            </style>
+
+            <div class="animated-container">
+                <h2 class="animated-title">{icon} Financial Health Score: {health_score} ({label})</h2>
             </div>
             """,
             unsafe_allow_html=True
         )
+
+
 
         # Display the health score as a progress bar (like a battery)
         st.progress(health_score / 100)
