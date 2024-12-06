@@ -1,15 +1,23 @@
 import os
+import platform
 
-
-# Check directory
+# Check current directory
 current_directory = os.getcwd()
-print("DIRECTORY:", current_directory)
+print("Current Directory:", current_directory)
 
-# Windows path
+# Define paths for Windows and macOS
 windows_path = "C:\\Users\\Nutzer\\GitHub\\Ironhack\\Groupwork\\final_project"
 mac_path = "/Users/linh/Documents/GitHub/GroupWork/Final_Project/final_project"
 
+# Select path based on OS
+target_path = windows_path if platform.system() == "Windows" else mac_path
 
-os.chdir("/Users/linh/Documents/GitHub/GroupWork/Final_Project/final_project")
-# Replace 'your_script.py' with the actual name of your Streamlit file
-os.system("streamlit run simple_app.py")
+try:
+    # Change directory to the target path
+    os.chdir(target_path)
+    print("Changed directory to:", target_path)
+
+    # Run the Streamlit app
+    os.system("streamlit run simple_app.py")
+except Exception as e:
+    print("An error occurred:", e)

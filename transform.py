@@ -12,7 +12,7 @@ mac_path = "/Users/linh/Documents/GitHub/GroupWork/Final_Project/final_project"
 
 # checking working directory
 print("Current Working Directory:", os.getcwd())
-os.chdir(mac_path)
+os.chdir(windows_path)
 print("Current Working Directory:", os.getcwd())
 
 # Initialize financial data
